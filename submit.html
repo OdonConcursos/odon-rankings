@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enviar Nota | OdonConcursos</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      padding: 14px 20px; border-radius: 8px; font-size: 14px;
+      font-family: Arial, sans-serif; color: #fff;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      transform: translateY(80px); opacity: 0;
+      transition: all 0.3s; z-index: 300;
+    }
+    .toast.visivel { transform: translateY(0); opacity: 1; }
+    .toast-success { background: #28a745; }
+    .toast-error   { background: #dc3545; }
+    .toast-info    { background: #1a1b4b; }
+
+    .incentivo-login {
+      background: linear-gradient(135deg, #fff9e6, #fff3cc);
+      border: 1.5px solid #ffc107;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .incentivo-login .icone { font-size: 28px; }
+    .incentivo-login h4 { font-size: 15px; color: #856404; margin-bottom: 4px; }
+    .incentivo-login p  { font-size: 13px; color: #856404; }
+    .incentivo-login a  { color: var(--pink); font-weight: bold; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <a href="index.html" class="header-logo">
+    <span>
+      OdonConcursos
+      <span class="logo-sub">Rankings de Provas</span>
+    </span>
+  </a>
+  <nav class="header-nav">
+    <div id="nav-deslogado">
+      <a href="auth.html" class="btn-header btn-header-outline">Entrar</a>
+      <a href="auth.html?tab=cadastro" class="btn-header btn-header-pink">Criar conta</a>
+    </div>
+    <div id="nav-logado" class="d-none" style="display:flex;align-items:center;gap:8px;">
+      <a href="history.html" class="btn-header btn-header-outline">Meu histórico</a>
+      <a href="admin.html" id="link-admin" class="btn-header btn-header-outline d-none">Painel Admin</a>
+      <div class="user-avatar" id="user-iniciais" onclick="fazerLogout()" title="Sair">?</div>
+    </div>
+  </nav>
+</header>
+
+<div class="container">
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="index.html">🏠 Início</a>
+    <span class="sep">›</span>
+    <a href="#" id="breadcrumb-prova">Prova</a>
+    <span class="sep">›</span>
+    <span id="breadcrumb-acao">Enviar nota</span>
+  </div>
+
+  <div id="loading-form" class="loading">
+    <div class="spinner"></div>
+    <span>Carregando...</span>
+  </div>
+
+  <div id="form-wrapper" style="display:none;">
+
+    <!-- Incentivo login (só para não logados) -->
+    <div class="incentivo-login" id="incentivo-login" style="display:none;">
+      <div class="icone">💡</div>
+      <div>
+        <h4>Acompanhe seu desempenho ao longo do tempo!</h4>
+        <p>
+          Você pode enviar sua nota sem criar conta, mas se quiser ver seu histórico de provas e evolução,
+          <a href="auth.html?tab=cadastro">crie uma conta grátis</a> ou
+          <a href="auth.html">faça login</a>. É rápido!
+        </p>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <h2 id="form-titulo">📝 Enviar minha nota</h2>
+      <p class="form-subtitle" id="form-prova-nome">—</p>
+
+      <!-- Nome e privacidade -->
+      <div class="form-group">
+        <label>Seu nome <span style="color:#dc3545;">*</span></label>
+        <input type="text" class="form-control" id="campo-nome" placeholder="Como você quer aparecer no ranking">
+        <label class="checkbox-label" style="margin-top:8px;">
+          <input type="checkbox" id="check-iniciais" onchange="toggleIniciais()">
+          Exibir apenas minhas iniciais neste ranking
+        </label>
+        <div id="preview-nome" style="margin-top:8px;font-size:13px;color:var(--cinza-texto);display:none;">
+          Será exibido como: <strong id="preview-nome-texto">—</strong>
+        </div>
+      </div>
+
+      <!-- Nota total -->
+      <div class="form-group">
+        <label>Nota total <span style="color:#dc3545;">*</span></label>
+        <input
+          type="number"
+          class="form-control"
+          id="campo-nota"
+          placeholder="Ex: 78.5"
+          min="0"
+          max="9999"
+          step="0.1"
+          style="max-width:200px;"
+        >
+      </div>
+
+      <!-- Disciplinas -->
+      <div class="disciplinas-section">
+        <h4>📚 Acertos por disciplina <span style="font-weight:normal;color:var(--cinza-texto);font-size:12px;">(opcional)</span></h4>
+
+        <div id="lista-disciplinas"></div>
+
+        <div class="add-disciplina">
+          <input type="text" id="nova-disc-input" placeholder="Adicionar disciplina..." onkeydown="if(event.key==='Enter') adicionarDisciplina()">
+          <button onclick="adicionarDisciplina()">+ Adicionar</button>
+        </div>
+      </div>
+
+      <!-- Upload de prova -->
+      <div class="form-group">
+        <label>
+          Enviar prova
+          <span class="opcional">(PDF ou imagem — opcional)</span>
+        </label>
+        <div class="upload-area" id="upload-area" onclick="document.getElementById('arquivo-input').click()"
+             ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropArquivo(event)">
+          <div class="upload-icon">📎</div>
+          <p>Clique para selecionar ou arraste o arquivo aqui</p>
+          <p class="upload-hint">PDF, JPG, PNG — máx. 10MB</p>
+          <input type="file" id="arquivo-input" accept=".pdf,.jpg,.jpeg,.png" onchange="selecionarArquivo(event)">
+        </div>
+        <div id="arquivo-preview" style="display:none;" class="arquivo-selecionado">
+          <span class="icon-arquivo" id="arquivo-icone">📄</span>
+          <span id="arquivo-nome-texto">—</span>
+          <button onclick="removerArquivo()" style="margin-left:auto;background:none;border:none;color:#dc3545;cursor:pointer;font-size:18px;">✕</button>
+        </div>
+      </div>
+
+      <!-- Ações -->
+      <div style="display:flex;gap:12px;margin-top:24px;flex-wrap:wrap;">
+        <button class="btn btn-pink" id="btn-enviar" onclick="enviarNota()">
+          ✅ Enviar nota
+        </button>
+        <a id="btn-voltar" href="#" class="btn btn-outline">Cancelar</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<footer>
+  <strong>OdonConcursos</strong> &mdash; Rankings de Provas &copy; 2025
+</footer>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+
+<script>
+  const params  = new URLSearchParams(window.location.search);
+  const provaId = params.get('provaId');
+  const notaId  = params.get('notaId'); // presente quando está editando
+
+  if (!provaId) window.location.href = 'index.html';
+
+  const DISCIPLINAS_FIXAS = [
+    'Português',
+    'Conhecimentos Específicos',
+    'SUS',
+    'Informática',
+    'Raciocínio Lógico'
+  ];
+
+  let disciplinas = [];
+  let arquivoSelecionado = null;
+  let notaExistente = null;
+
+  // Inicializa disciplinas fixas
+  function inicializarDisciplinas(disciplinasExistentes = null) {
+    disciplinas = DISCIPLINAS_FIXAS.map(nome => {
+      const existente = disciplinasExistentes?.find(d => d.nome === nome);
+      return { nome, acertos: existente ? existente.acertos : '' };
+    });
+
+    // Adiciona disciplinas customizadas que vieram da nota existente
+    if (disciplinasExistentes) {
+      disciplinasExistentes.forEach(d => {
+        if (!DISCIPLINAS_FIXAS.includes(d.nome)) {
+          disciplinas.push({ nome: d.nome, acertos: d.acertos });
+        }
+      });
+    }
+
+    renderizarDisciplinas();
+  }
+
+  function renderizarDisciplinas() {
+    const lista = document.getElementById('lista-disciplinas');
+    lista.innerHTML = '';
+    disciplinas.forEach((disc, i) => {
+      const div = document.createElement('div');
+      div.className = 'disciplina-item';
+      const isFixa = DISCIPLINAS_FIXAS.includes(disc.nome);
+      div.innerHTML = `
+        <span class="disc-nome">${disc.nome}</span>
+        <input
+          type="number"
+          class="disc-input"
+          min="0"
+          max="999"
+          placeholder="Acertos"
+          value="${disc.acertos}"
+          onchange="atualizarDisciplina(${i}, this.value)"
+        >
+        ${!isFixa
+          ? `<button class="btn-remover-disc" onclick="removerDisciplina(${i})" title="Remover">✕</button>`
+          : '<span style="width:28px;"></span>'}
+      `;
+      lista.appendChild(div);
+    });
+  }
+
+  function atualizarDisciplina(index, valor) {
+    disciplinas[index].acertos = valor === '' ? '' : parseFloat(valor);
+  }
+
+  function adicionarDisciplina() {
+    const input = document.getElementById('nova-disc-input');
+    const nome  = input.value.trim();
+    if (!nome) return;
+    if (disciplinas.find(d => d.nome.toLowerCase() === nome.toLowerCase())) {
+      showToast('Essa disciplina já foi adicionada.', 'error');
+      return;
+    }
+    disciplinas.push({ nome, acertos: '' });
+    renderizarDisciplinas();
+    input.value = '';
+  }
+
+  function removerDisciplina(index) {
+    disciplinas.splice(index, 1);
+    renderizarDisciplinas();
+  }
+
+  // Preview do nome / iniciais
+  document.addEventListener('input', function(e) {
+    if (e.target.id === 'campo-nome') atualizarPreviewNome();
+  });
+
+  function toggleIniciais() {
+    atualizarPreviewNome();
+  }
+
+  function atualizarPreviewNome() {
+    const nome      = document.getElementById('campo-nome').value.trim();
+    const iniciais  = document.getElementById('check-iniciais').checked;
+    const preview   = document.getElementById('preview-nome');
+    const previewTx = document.getElementById('preview-nome-texto');
+
+    if (nome) {
+      preview.style.display = 'block';
+      previewTx.textContent = iniciais ? gerarIniciais(nome) : nome;
+    } else {
+      preview.style.display = 'none';
+    }
+  }
+
+  // Upload
+  function selecionarArquivo(e) {
+    const file = e.target.files[0];
+    if (file) processarArquivo(file);
+  }
+
+  function dragOver(e) {
+    e.preventDefault();
+    document.getElementById('upload-area').classList.add('drag-over');
+  }
+
+  function dragLeave(e) {
+    document.getElementById('upload-area').classList.remove('drag-over');
+  }
+
+  function dropArquivo(e) {
+    e.preventDefault();
+    document.getElementById('upload-area').classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) processarArquivo(file);
+  }
+
+  function processarArquivo(file) {
+    const tipos = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+    if (!tipos.includes(file.type)) {
+      showToast('Arquivo inválido. Use PDF, JPG ou PNG.', 'error');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      showToast('Arquivo muito grande. Máximo 10MB.', 'error');
+      return;
+    }
+    arquivoSelecionado = file;
+    const icone = file.type === 'application/pdf' ? '📄' : '🖼️';
+    document.getElementById('arquivo-icone').textContent = icone;
+    document.getElementById('arquivo-nome-texto').textContent = file.name;
+    document.getElementById('arquivo-preview').style.display = 'flex';
+    document.getElementById('upload-area').style.display = 'none';
+  }
+
+  function removerArquivo() {
+    arquivoSelecionado = null;
+    document.getElementById('arquivo-input').value = '';
+    document.getElementById('arquivo-preview').style.display = 'none';
+    document.getElementById('upload-area').style.display = 'block';
+  }
+
+  // Envio
+  async function enviarNota() {
+    const nome      = document.getElementById('campo-nome').value.trim();
+    const notaTotal = parseFloat(document.getElementById('campo-nota').value);
+    const iniciais  = document.getElementById('check-iniciais').checked;
+
+    if (!nome) {
+      showToast('Informe seu nome.', 'error');
+      document.getElementById('campo-nome').focus();
+      return;
+    }
+    if (isNaN(notaTotal) || notaTotal < 0) {
+      showToast('Informe sua nota total.', 'error');
+      document.getElementById('campo-nota').focus();
+      return;
+    }
+
+    const btn = document.getElementById('btn-enviar');
+    btn.textContent = 'Enviando...';
+    btn.disabled = true;
+
+    try {
+      const nomeExibicao = iniciais ? gerarIniciais(nome) : nome;
+      const token = getAnonToken();
+
+      // Faz upload do arquivo se houver
+      let arquivoUrl  = null;
+      let arquivoNome = null;
+      if (arquivoSelecionado) {
+        btn.textContent = '📤 Enviando arquivo...';
+        arquivoUrl  = await uploadParaCloudinary(arquivoSelecionado, provaId);
+        arquivoNome = arquivoSelecionado.name;
+        btn.textContent = '✅ Salvando nota...';
+      }
+
+      const disciplinasLimpas = disciplinas
+        .filter(d => d.acertos !== '' && d.acertos !== null && d.acertos !== undefined)
+        .map(d => ({ nome: d.nome, acertos: Number(d.acertos) }));
+
+      const payload = {
+        nomeReal:     nome,
+        nomeExibicao,
+        mostrarIniciais: iniciais,
+        notaTotal,
+        disciplinas: disciplinasLimpas,
+        userId:    currentUser ? currentUser.uid : null,
+        anonToken: token,
+        enviadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+        arquivoUrl,
+        arquivoNome
+      };
+
+      const notasRef = db.collection('provas').doc(provaId).collection('notas');
+
+      if (notaId) {
+        // Edição
+        await notasRef.doc(notaId).update({
+          ...payload,
+          atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      } else {
+        // Nova nota
+        await notasRef.add(payload);
+        // Incrementa contador de participantes
+        await db.collection('provas').doc(provaId).update({
+          totalParticipantes: firebase.firestore.FieldValue.increment(1)
+        });
+      }
+
+      showToast(notaId ? 'Nota atualizada com sucesso!' : 'Nota enviada com sucesso!', 'success');
+      setTimeout(() => {
+        window.location.href = `ranking.html?id=${provaId}`;
+      }, 1200);
+    } catch (e) {
+      console.error(e);
+      showToast('Erro ao enviar nota. Tente novamente.', 'error');
+      btn.textContent = '✅ Enviar nota';
+      btn.disabled = false;
+    }
+  }
+
+  // Carrega dados iniciais
+  async function inicializar() {
+    try {
+      const provaSnap = await db.collection('provas').doc(provaId).get();
+      if (!provaSnap.exists) {
+        window.location.href = 'index.html';
+        return;
+      }
+      const prova = provaSnap.data();
+      document.getElementById('form-prova-nome').textContent = prova.nome + ' — ' + (prova.banca || '');
+      document.getElementById('breadcrumb-prova').textContent = prova.nome;
+      document.getElementById('breadcrumb-prova').href = `ranking.html?id=${provaId}`;
+      document.getElementById('btn-voltar').href = `ranking.html?id=${provaId}`;
+
+      if (notaId) {
+        // Modo edição: carrega nota existente
+        const notaSnap = await db.collection('provas').doc(provaId).collection('notas').doc(notaId).get();
+        if (notaSnap.exists) {
+          notaExistente = notaSnap.data();
+
+          // Verifica permissão de edição
+          const token = getAnonToken();
+          const uid   = currentUser?.uid;
+          const temPermissao = (uid && notaExistente.userId === uid) || notaExistente.anonToken === token;
+
+          if (!temPermissao) {
+            showToast('Você não tem permissão para editar essa nota.', 'error');
+            setTimeout(() => window.location.href = `ranking.html?id=${provaId}`, 2000);
+            return;
+          }
+
+          document.getElementById('form-titulo').textContent = '✏️ Editar minha nota';
+          document.getElementById('breadcrumb-acao').textContent = 'Editar nota';
+          document.getElementById('btn-enviar').textContent = '✅ Salvar alterações';
+          document.getElementById('campo-nome').value = notaExistente.nomeReal || '';
+          document.getElementById('campo-nota').value = notaExistente.notaTotal || '';
+          document.getElementById('check-iniciais').checked = notaExistente.mostrarIniciais || false;
+          atualizarPreviewNome();
+          inicializarDisciplinas(notaExistente.disciplinas);
+        }
+      } else {
+        inicializarDisciplinas();
+      }
+
+      // Pré-preenche nome se logado
+      if (currentUser && !notaId) {
+        const nome = currentUser.displayName || '';
+        if (nome) document.getElementById('campo-nome').value = nome;
+      }
+
+      // Mostra incentivo se não logado
+      if (!currentUser) {
+        document.getElementById('incentivo-login').style.display = 'flex';
+      }
+
+      document.getElementById('loading-form').style.display = 'none';
+      document.getElementById('form-wrapper').style.display = 'block';
+
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function fazerLogout() {
+    if (confirm('Deseja sair da sua conta?')) {
+      await auth.signOut();
+      location.reload();
+    }
+  }
+
+  auth.onAuthStateChanged(() => {
+    inicializar();
+  });
+</script>
+
+</body>
+</html>

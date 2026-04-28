@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rankings de Provas | OdonConcursos</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 14px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: Arial, sans-serif;
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 300;
+    }
+    .toast.visivel { transform: translateY(0); opacity: 1; }
+    .toast-success { background: #28a745; }
+    .toast-error   { background: #dc3545; }
+    .toast-info    { background: #1a1b4b; }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <a href="index.html" class="header-logo">
+    <span>
+      OdonConcursos
+      <span class="logo-sub">Rankings de Provas</span>
+    </span>
+  </a>
+  <nav class="header-nav">
+    <!-- Deslogado -->
+    <div id="nav-deslogado">
+      <a href="auth.html" class="btn-header btn-header-outline">Entrar</a>
+      <a href="auth.html?tab=cadastro" class="btn-header btn-header-pink">Criar conta</a>
+    </div>
+    <!-- Logado -->
+    <div id="nav-logado" class="d-none" style="display:flex;align-items:center;gap:8px;">
+      <a href="history.html" class="btn-header btn-header-outline">Meu histórico</a>
+      <a href="admin.html" id="link-admin" class="btn-header btn-header-outline d-none">Painel Admin</a>
+      <div class="user-avatar" id="user-iniciais" onclick="fazerLogout()" title="Sair">?</div>
+    </div>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <h1>Rankings de <span>Provas de Concursos</span></h1>
+  <p>Compare seu desempenho com outros candidatos. Envie sua nota e veja onde você se posiciona!</p>
+  <button class="btn btn-pink" onclick="abrirModalNovoRanking()">
+    ➕ Criar novo ranking
+  </button>
+</section>
+
+<!-- CONTEÚDO PRINCIPAL -->
+<div class="container">
+
+  <!-- Barra de busca -->
+  <div class="search-bar">
+    <input
+      type="text"
+      class="search-input"
+      id="busca-input"
+      placeholder="🔍  Buscar por nome da prova ou banca..."
+      oninput="filtrarCards()"
+    >
+    <select class="search-input" id="filtro-banca" style="max-width:200px;" onchange="filtrarCards()">
+      <option value="">Todas as bancas</option>
+    </select>
+  </div>
+
+  <!-- Título e grid de cards -->
+  <div class="section-title">Provas com ranking</div>
+
+  <div id="loading-cards" class="loading">
+    <div class="spinner"></div>
+    <span>Carregando rankings...</span>
+  </div>
+
+  <div id="cards-grid" class="cards-grid" style="display:none;"></div>
+
+  <div id="empty-state" class="empty-state" style="display:none;">
+    <div class="empty-icon">📋</div>
+    <h3>Nenhuma prova encontrada</h3>
+    <p>Tente outro termo de busca ou crie o primeiro ranking para essa prova.</p>
+    <br>
+    <button class="btn btn-pink" onclick="abrirModalNovoRanking()">➕ Criar ranking</button>
+  </div>
+
+</div>
+
+<!-- MODAL NOVO RANKING -->
+<div class="modal-overlay" id="modal-novo">
+  <div class="modal">
+    <h3>➕ Criar novo ranking</h3>
+    <p>Preencha os dados da prova para criar o ranking. Todos poderão enviar suas notas depois.</p>
+
+    <div class="form-group">
+      <label>Nome da prova / cargo <span style="color:#dc3545;">*</span></label>
+      <input type="text" class="form-control" id="novo-nome" placeholder="Ex: Analista Judiciário – TJ-SP">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Banca organizadora <span style="color:#dc3545;">*</span></label>
+        <input type="text" class="form-control" id="novo-banca" placeholder="Ex: FCC, CESPE, VUNESP">
+      </div>
+      <div class="form-group">
+        <label>Data da prova <span style="color:#dc3545;">*</span></label>
+        <input type="date" class="form-control" id="novo-data">
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-pink" onclick="criarRanking()">Criar ranking</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<footer>
+  <strong>OdonConcursos</strong> &mdash; Rankings de Provas &copy; 2025
+</footer>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+
+<script>
+  let todasProvas = [];
+
+  // Carrega provas do Firestore
+  async function carregarProvas() {
+    document.getElementById('loading-cards').style.display = 'flex';
+    document.getElementById('cards-grid').style.display = 'none';
+    document.getElementById('empty-state').style.display = 'none';
+
+    try {
+      const snap = await db.collection('provas')
+        .orderBy('criadaEm', 'desc')
+        .get();
+
+      todasProvas = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      popularFiltros();
+      renderizarCards(todasProvas);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      document.getElementById('loading-cards').style.display = 'none';
+    }
+  }
+
+  function popularFiltros() {
+    const bancas = [...new Set(todasProvas.map(p => p.banca).filter(Boolean))].sort();
+    const select = document.getElementById('filtro-banca');
+    bancas.forEach(b => {
+      const opt = document.createElement('option');
+      opt.value = b;
+      opt.textContent = b;
+      select.appendChild(opt);
+    });
+  }
+
+  function filtrarCards() {
+    const termo  = document.getElementById('busca-input').value.toLowerCase();
+    const banca  = document.getElementById('filtro-banca').value;
+    const filtradas = todasProvas.filter(p => {
+      const matchTermo = !termo ||
+        (p.nome  && p.nome.toLowerCase().includes(termo)) ||
+        (p.banca && p.banca.toLowerCase().includes(termo));
+      const matchBanca = !banca || p.banca === banca;
+      return matchTermo && matchBanca;
+    });
+    renderizarCards(filtradas);
+  }
+
+  function renderizarCards(provas) {
+    const grid = document.getElementById('cards-grid');
+    const empty = document.getElementById('empty-state');
+    grid.innerHTML = '';
+
+    if (provas.length === 0) {
+      grid.style.display = 'none';
+      empty.style.display = 'block';
+      return;
+    }
+
+    grid.style.display = 'grid';
+    empty.style.display = 'none';
+
+    provas.forEach(p => {
+      const card = document.createElement('a');
+      card.href = `ranking.html?id=${p.id}`;
+      card.className = 'card-prova';
+      card.innerHTML = `
+        <div class="card-data">📅 ${p.dataProva || 'Data não informada'}</div>
+        <div class="card-banca">${p.banca || 'Banca não informada'}</div>
+        <div class="card-nome">${p.nome}</div>
+        <div class="card-participantes">
+          👥 ${p.totalParticipantes || 0} participante${(p.totalParticipantes || 0) !== 1 ? 's' : ''}
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+
+    // Card "Criar novo"
+    const cardNovo = document.createElement('div');
+    cardNovo.className = 'card-prova card-novo';
+    cardNovo.onclick = abrirModalNovoRanking;
+    cardNovo.innerHTML = `
+      <div class="icon-plus">➕</div>
+      <span>Não encontrei minha prova.<br>Criar novo ranking</span>
+    `;
+    grid.appendChild(cardNovo);
+  }
+
+  // Modal novo ranking
+  function abrirModalNovoRanking() {
+    document.getElementById('modal-novo').classList.add('aberto');
+  }
+
+  function fecharModal() {
+    document.getElementById('modal-novo').classList.remove('aberto');
+    document.getElementById('novo-nome').value = '';
+    document.getElementById('novo-banca').value = '';
+    document.getElementById('novo-data').value = '';
+  }
+
+  // Fechar modal clicando fora
+  document.getElementById('modal-novo').addEventListener('click', function(e) {
+    if (e.target === this) fecharModal();
+  });
+
+  async function criarRanking() {
+    const nome  = document.getElementById('novo-nome').value.trim();
+    const banca = document.getElementById('novo-banca').value.trim();
+    const data  = document.getElementById('novo-data').value;
+
+    if (!nome || !banca || !data) {
+      showToast('Preencha todos os campos obrigatórios.', 'error');
+      return;
+    }
+
+    const btn = document.querySelector('#modal-novo .btn-pink');
+    btn.textContent = 'Criando...';
+    btn.disabled = true;
+
+    try {
+      const ref = await db.collection('provas').add({
+        nome,
+        banca,
+        dataProva: data,
+        totalParticipantes: 0,
+        criadaEm: firebase.firestore.FieldValue.serverTimestamp(),
+        criadaPor: currentUser ? currentUser.uid : getAnonToken()
+      });
+      fecharModal();
+      showToast('Ranking criado com sucesso!', 'success');
+      setTimeout(() => {
+        window.location.href = `ranking.html?id=${ref.id}`;
+      }, 800);
+    } catch (e) {
+      console.error(e);
+      showToast('Erro ao criar ranking. Tente novamente.', 'error');
+    } finally {
+      btn.textContent = 'Criar ranking';
+      btn.disabled = false;
+    }
+  }
+
+  async function fazerLogout() {
+    if (confirm('Deseja sair da sua conta?')) {
+      await auth.signOut();
+      showToast('Você saiu da sua conta.', 'info');
+    }
+  }
+
+  // Inicia
+  carregarProvas();
+</script>
+
+</body>
+</html>

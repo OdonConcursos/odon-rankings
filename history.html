@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meu Histórico | OdonConcursos Rankings</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      padding: 14px 20px; border-radius: 8px; font-size: 14px;
+      font-family: Arial, sans-serif; color: #fff;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      transform: translateY(80px); opacity: 0;
+      transition: all 0.3s; z-index: 300;
+    }
+    .toast.visivel { transform: translateY(0); opacity: 1; }
+    .toast-success { background: #28a745; }
+    .toast-error   { background: #dc3545; }
+    .toast-info    { background: #1a1b4b; }
+
+    .stats-resumo {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-resumo-card {
+      background: var(--branco);
+      border-radius: var(--raio);
+      padding: 20px;
+      box-shadow: var(--sombra);
+      text-align: center;
+      border-top: 4px solid var(--pink);
+    }
+
+    .stat-resumo-card .num {
+      font-size: 32px;
+      font-weight: bold;
+      color: var(--azul);
+    }
+
+    .stat-resumo-card .label {
+      font-size: 13px;
+      color: var(--cinza-texto);
+      margin-top: 4px;
+    }
+
+    .historico-item {
+      background: var(--branco);
+      border-radius: var(--raio);
+      padding: 20px 24px;
+      box-shadow: var(--sombra);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+      transition: box-shadow 0.2s;
+    }
+
+    .historico-item:hover {
+      box-shadow: var(--sombra-hover);
+    }
+
+    .historico-item .posicao-badge {
+      min-width: 52px;
+      height: 52px;
+      background: linear-gradient(135deg, var(--azul), var(--azul-claro));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: bold;
+      color: var(--branco);
+      flex-shrink: 0;
+    }
+
+    .historico-item .item-info {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .historico-item .item-info h4 {
+      font-size: 16px;
+      color: var(--azul);
+      margin-bottom: 2px;
+    }
+
+    .historico-item .item-info .banca {
+      font-size: 12px;
+      color: var(--cinza-texto);
+      margin-bottom: 8px;
+    }
+
+    .historico-item .item-nota {
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .historico-item .item-nota .nota-grande {
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--pink);
+    }
+
+    .historico-item .item-nota .nota-label {
+      font-size: 12px;
+      color: var(--cinza-texto);
+    }
+
+    .historico-item .item-nota .btn-sm {
+      margin-top: 8px;
+      display: block;
+    }
+
+    .disc-mini-lista {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 6px;
+    }
+
+    .disc-mini {
+      background: var(--cinza-claro);
+      border: 1px solid var(--cinza-medio);
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      color: var(--azul);
+    }
+
+    .evolucao-nota {
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .evolucao-nota.sobe { color: var(--verde); }
+    .evolucao-nota.desce { color: #dc3545; }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <a href="index.html" class="header-logo">
+    <span>
+      OdonConcursos
+      <span class="logo-sub">Rankings de Provas</span>
+    </span>
+  </a>
+  <nav class="header-nav">
+    <div id="nav-deslogado">
+      <a href="auth.html" class="btn-header btn-header-outline">Entrar</a>
+      <a href="auth.html?tab=cadastro" class="btn-header btn-header-pink">Criar conta</a>
+    </div>
+    <div id="nav-logado" class="d-none" style="display:flex;align-items:center;gap:8px;">
+      <a href="history.html" class="btn-header btn-header-pink">Meu histórico</a>
+      <a href="admin.html" id="link-admin" class="btn-header btn-header-outline d-none">Painel Admin</a>
+      <div class="user-avatar" id="user-iniciais" onclick="fazerLogout()" title="Sair">?</div>
+    </div>
+  </nav>
+</header>
+
+<div class="container">
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="index.html">🏠 Início</a>
+    <span class="sep">›</span>
+    <span>Meu histórico</span>
+  </div>
+
+  <!-- Tela de não logado -->
+  <div id="tela-nao-logado" style="display:none;">
+    <div class="empty-state">
+      <div class="empty-icon">🔒</div>
+      <h3>Faça login para ver seu histórico</h3>
+      <p>O histórico de desempenho fica disponível apenas para usuários com conta cadastrada.</p>
+      <br>
+      <a href="auth.html?redirect=history.html" class="btn btn-pink">Entrar na minha conta</a>
+      <br><br>
+      <a href="auth.html?tab=cadastro&redirect=history.html" class="btn btn-outline">Criar conta grátis</a>
+    </div>
+  </div>
+
+  <!-- Tela de carregamento -->
+  <div id="loading-historico" class="loading" style="display:none;">
+    <div class="spinner"></div>
+    <span>Carregando seu histórico...</span>
+  </div>
+
+  <!-- Conteúdo logado -->
+  <div id="conteudo-historico" style="display:none;">
+
+    <h2 style="font-size:22px;color:var(--azul);margin-bottom:4px;">
+      Olá, <span id="nome-usuario" style="color:var(--pink);">—</span>! 👋
+    </h2>
+    <p style="color:var(--cinza-texto);font-size:14px;margin-bottom:24px;">
+      Veja seu desempenho ao longo das provas que você participou.
+    </p>
+
+    <!-- Resumo -->
+    <div class="stats-resumo" id="stats-resumo">
+      <div class="stat-resumo-card">
+        <div class="num" id="stat-total-provas">0</div>
+        <div class="label">Provas participadas</div>
+      </div>
+      <div class="stat-resumo-card">
+        <div class="num" id="stat-melhor-pos">—</div>
+        <div class="label">Melhor posição</div>
+      </div>
+      <div class="stat-resumo-card">
+        <div class="num" id="stat-maior-nota">—</div>
+        <div class="label">Maior nota</div>
+      </div>
+      <div class="stat-resumo-card">
+        <div class="num" id="stat-media-notas">—</div>
+        <div class="label">Média geral</div>
+      </div>
+    </div>
+
+    <!-- Lista de provas -->
+    <div class="section-title">Provas que participei</div>
+    <div id="lista-historico"></div>
+
+    <div id="empty-historico" class="empty-state" style="display:none;">
+      <div class="empty-icon">📋</div>
+      <h3>Você ainda não enviou notas</h3>
+      <p>Envie sua nota em uma prova e acompanhe seu desempenho aqui!</p>
+      <br>
+      <a href="index.html" class="btn btn-pink">Ver provas disponíveis</a>
+    </div>
+
+  </div>
+
+</div>
+
+<div id="toast" class="toast"></div>
+
+<footer>
+  <strong>OdonConcursos</strong> &mdash; Rankings de Provas &copy; 2025
+</footer>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+
+<script>
+  auth.onAuthStateChanged(async (user) => {
+    if (!user) {
+      document.getElementById('tela-nao-logado').style.display = 'block';
+      return;
+    }
+
+    document.getElementById('loading-historico').style.display = 'flex';
+    document.getElementById('nome-usuario').textContent = user.displayName || user.email.split('@')[0];
+
+    try {
+      // Busca todas as notas do usuário em todas as provas
+      // Estratégia: busca notas onde userId == user.uid em todas as provas
+      const provasSnap = await db.collection('provas').orderBy('criadaEm', 'desc').get();
+      const provas = provasSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      const entradas = [];
+
+      // Para cada prova, verifica se o usuário tem nota
+      await Promise.all(provas.map(async (prova) => {
+        const notaSnap = await db.collection('provas').doc(prova.id)
+          .collection('notas')
+          .where('userId', '==', user.uid)
+          .limit(1)
+          .get();
+
+        if (!notaSnap.empty) {
+          const nota = { id: notaSnap.docs[0].id, ...notaSnap.docs[0].data() };
+
+          // Busca posição no ranking
+          const todasNotasSnap = await db.collection('provas').doc(prova.id)
+            .collection('notas')
+            .orderBy('notaTotal', 'desc')
+            .get();
+
+          const todasNotas = todasNotasSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+          const posicao = todasNotas.findIndex(n => n.id === nota.id) + 1;
+          const total   = todasNotas.length;
+
+          entradas.push({ prova, nota, posicao, total });
+        }
+      }));
+
+      // Estatísticas
+      document.getElementById('stat-total-provas').textContent = entradas.length;
+
+      if (entradas.length > 0) {
+        const melhorPos = Math.min(...entradas.map(e => e.posicao));
+        const maiorNota = Math.max(...entradas.map(e => e.nota.notaTotal || 0));
+        const media     = entradas.reduce((s, e) => s + (e.nota.notaTotal || 0), 0) / entradas.length;
+
+        document.getElementById('stat-melhor-pos').textContent = `#${melhorPos}`;
+        document.getElementById('stat-maior-nota').textContent = maiorNota.toFixed(1);
+        document.getElementById('stat-media-notas').textContent = media.toFixed(1);
+
+        renderizarHistorico(entradas);
+      } else {
+        document.getElementById('empty-historico').style.display = 'block';
+      }
+
+    } catch (e) {
+      console.error(e);
+    } finally {
+      document.getElementById('loading-historico').style.display = 'none';
+      document.getElementById('conteudo-historico').style.display = 'block';
+    }
+  });
+
+  function renderizarHistorico(entradas) {
+    const lista = document.getElementById('lista-historico');
+
+    entradas.forEach(({ prova, nota, posicao, total }) => {
+      let medalha = posicao === 1 ? '🥇' : posicao === 2 ? '🥈' : posicao === 3 ? '🥉' : `#${posicao}`;
+
+      let discsHtml = '';
+      if (nota.disciplinas && nota.disciplinas.length > 0) {
+        discsHtml = `<div class="disc-mini-lista">` +
+          nota.disciplinas.map(d =>
+            `<span class="disc-mini">${d.nome}: <strong>${d.acertos}</strong></span>`
+          ).join('') +
+          `</div>`;
+      }
+
+      const div = document.createElement('div');
+      div.className = 'historico-item';
+      div.innerHTML = `
+        <div class="posicao-badge">${medalha}</div>
+        <div class="item-info">
+          <h4>${prova.nome}</h4>
+          <div class="banca">${prova.banca || '—'} · ${prova.dataProva ? new Date(prova.dataProva + 'T12:00:00').toLocaleDateString('pt-BR') : '—'}</div>
+          <div style="font-size:13px;color:var(--cinza-texto);">
+            ${posicao}º de ${total} participante${total !== 1 ? 's' : ''}
+          </div>
+          ${discsHtml}
+        </div>
+        <div class="item-nota">
+          <div class="nota-grande">${nota.notaTotal != null ? nota.notaTotal.toFixed(1) : '—'}</div>
+          <div class="nota-label">pontos</div>
+          <a href="ranking.html?id=${prova.id}" class="btn btn-outline btn-sm" style="display:inline-flex;margin-top:8px;font-size:12px;">
+            Ver ranking
+          </a>
+          <br>
+          <a href="submit.html?provaId=${prova.id}&notaId=${nota.id}"
+             class="btn btn-outline-pink btn-sm" style="display:inline-flex;margin-top:6px;font-size:12px;">
+            ✏️ Editar nota
+          </a>
+        </div>
+      `;
+      lista.appendChild(div);
+    });
+  }
+
+  async function fazerLogout() {
+    if (confirm('Deseja sair da sua conta?')) {
+      await auth.signOut();
+      window.location.href = 'index.html';
+    }
+  }
+</script>
+
+</body>
+</html>

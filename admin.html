@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Admin | OdonConcursos Rankings</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      padding: 14px 20px; border-radius: 8px; font-size: 14px;
+      font-family: Arial, sans-serif; color: #fff;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      transform: translateY(80px); opacity: 0;
+      transition: all 0.3s; z-index: 300;
+    }
+    .toast.visivel { transform: translateY(0); opacity: 1; }
+    .toast-success { background: #28a745; }
+    .toast-error   { background: #dc3545; }
+    .toast-info    { background: #1a1b4b; }
+
+    .admin-header-bar {
+      background: linear-gradient(135deg, var(--azul), var(--azul-claro));
+      color: #fff;
+      padding: 20px 24px;
+      border-radius: var(--raio);
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .admin-header-bar .admin-icon { font-size: 36px; }
+    .admin-header-bar h2 { font-size: 20px; margin-bottom: 2px; }
+    .admin-header-bar p  { font-size: 13px; opacity: 0.8; }
+
+    .filtro-prova {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .arquivo-linha {
+      background: var(--branco);
+      border-radius: 8px;
+      padding: 14px 18px;
+      box-shadow: var(--sombra);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .arquivo-linha .tipo-icon { font-size: 28px; flex-shrink: 0; }
+
+    .arquivo-linha .info {
+      flex: 1;
+      min-width: 160px;
+    }
+
+    .arquivo-linha .info .nome {
+      font-size: 14px;
+      font-weight: bold;
+      color: var(--azul);
+      word-break: break-all;
+    }
+
+    .arquivo-linha .info .meta {
+      font-size: 12px;
+      color: var(--cinza-texto);
+      margin-top: 2px;
+    }
+
+    .arquivo-linha .info .prova-ref {
+      font-size: 12px;
+      color: var(--pink);
+      margin-top: 2px;
+    }
+
+    .tab-admin {
+      display: flex;
+      gap: 2px;
+      border-bottom: 2px solid var(--cinza-medio);
+      margin-bottom: 24px;
+    }
+
+    .tab-admin-item {
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      color: var(--cinza-texto);
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      font-family: Arial, sans-serif;
+    }
+
+    .tab-admin-item.ativo {
+      color: var(--pink);
+      border-bottom-color: var(--pink);
+    }
+
+    .badge-count {
+      background: var(--pink);
+      color: #fff;
+      font-size: 11px;
+      padding: 1px 7px;
+      border-radius: 10px;
+      margin-left: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <a href="index.html" class="header-logo">
+    <span>
+      OdonConcursos
+      <span class="logo-sub">Rankings de Provas</span>
+    </span>
+  </a>
+  <nav class="header-nav">
+    <div id="nav-deslogado">
+      <a href="auth.html" class="btn-header btn-header-outline">Entrar</a>
+    </div>
+    <div id="nav-logado" class="d-none" style="display:flex;align-items:center;gap:8px;">
+      <a href="history.html" class="btn-header btn-header-outline">Meu histórico</a>
+      <a href="admin.html" id="link-admin" class="btn-header btn-header-pink d-none">Painel Admin</a>
+      <div class="user-avatar" id="user-iniciais" onclick="fazerLogout()" title="Sair">?</div>
+    </div>
+  </nav>
+</header>
+
+<div class="container">
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="index.html">🏠 Início</a>
+    <span class="sep">›</span>
+    <span>Painel Admin</span>
+  </div>
+
+  <!-- Acesso negado (não logado ou não admin) -->
+  <div id="tela-acesso-negado" style="display:none;">
+    <div class="empty-state">
+      <div class="empty-icon">🚫</div>
+      <h3>Acesso restrito</h3>
+      <p>Esta área é exclusiva para a equipe OdonConcursos.</p>
+      <br>
+      <a href="index.html" class="btn btn-azul">Voltar ao início</a>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading-admin" class="loading" style="display:none;">
+    <div class="spinner"></div>
+    <span>Verificando permissões...</span>
+  </div>
+
+  <!-- Painel admin -->
+  <div id="painel-admin" style="display:none;">
+
+    <div class="admin-header-bar">
+      <div class="admin-icon">🛡️</div>
+      <div>
+        <h2>Painel Administrativo <span class="admin-badge">EQUIPE ODON</span></h2>
+        <p>Gerencie provas enviadas pelos alunos e os rankings da plataforma.</p>
+      </div>
+    </div>
+
+    <!-- Abas -->
+    <div class="tab-admin">
+      <button class="tab-admin-item ativo" id="tab-provas-btn" onclick="mostrarTab('provas')">
+        📁 Provas enviadas <span class="badge-count" id="badge-provas">0</span>
+      </button>
+      <button class="tab-admin-item" id="tab-rankings-btn" onclick="mostrarTab('rankings')">
+        🏆 Rankings <span class="badge-count" id="badge-rankings">0</span>
+      </button>
+    </div>
+
+    <!-- Tab: Provas enviadas -->
+    <div id="tab-provas">
+      <div class="filtro-prova">
+        <select class="search-input" id="filtro-prova-admin" style="max-width:300px;" onchange="carregarArquivos()">
+          <option value="">Todas as provas</option>
+        </select>
+        <span id="total-arquivos" style="font-size:13px;color:var(--cinza-texto);"></span>
+      </div>
+
+      <div id="loading-arquivos" class="loading" style="display:none;">
+        <div class="spinner"></div>
+        <span>Carregando arquivos...</span>
+      </div>
+
+      <div id="lista-arquivos"></div>
+
+      <div id="empty-arquivos" class="empty-state" style="display:none;">
+        <div class="empty-icon">📂</div>
+        <h3>Nenhuma prova enviada ainda</h3>
+        <p>Quando os alunos enviarem provas, elas aparecerão aqui.</p>
+      </div>
+    </div>
+
+    <!-- Tab: Rankings -->
+    <div id="tab-rankings" style="display:none;">
+      <div id="loading-rankings-admin" class="loading" style="display:none;">
+        <div class="spinner"></div>
+        <span>Carregando rankings...</span>
+      </div>
+
+      <div class="table-container" id="tabela-rankings-admin" style="display:none;">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome da prova</th>
+              <th>Banca</th>
+              <th>Data</th>
+              <th style="width:120px;">Participantes</th>
+              <th style="width:120px;">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-rankings-admin"></tbody>
+        </table>
+      </div>
+
+      <div id="empty-rankings-admin" class="empty-state" style="display:none;">
+        <div class="empty-icon">📋</div>
+        <h3>Nenhum ranking criado ainda</h3>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal confirmação exclusão -->
+<div class="modal-overlay" id="modal-excluir">
+  <div class="modal">
+    <h3>⚠️ Confirmar exclusão</h3>
+    <p id="modal-excluir-msg">Deseja excluir este item? Esta ação não pode ser desfeita.</p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="fecharModalExcluir()">Cancelar</button>
+      <button class="btn btn-pink" id="btn-confirmar-excluir" onclick="confirmarExclusao()">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<footer>
+  <strong>OdonConcursos</strong> &mdash; Painel Admin &copy; 2025
+</footer>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+
+<script>
+  let todasProvasAdmin = [];
+  let itemParaExcluir  = null;
+
+  auth.onAuthStateChanged(async (user) => {
+    document.getElementById('loading-admin').style.display = 'flex';
+
+    if (!user) {
+      document.getElementById('loading-admin').style.display  = 'none';
+      document.getElementById('tela-acesso-negado').style.display = 'block';
+      return;
+    }
+
+    const admin = await isAdmin(user);
+    document.getElementById('loading-admin').style.display = 'none';
+
+    if (!admin) {
+      document.getElementById('tela-acesso-negado').style.display = 'block';
+      return;
+    }
+
+    document.getElementById('painel-admin').style.display = 'block';
+    await carregarProvasAdmin();
+    await carregarArquivos();
+  });
+
+  async function carregarProvasAdmin() {
+    const snap = await db.collection('provas').orderBy('criadaEm', 'desc').get();
+    todasProvasAdmin = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    document.getElementById('badge-rankings').textContent = todasProvasAdmin.length;
+
+    const select = document.getElementById('filtro-prova-admin');
+    todasProvasAdmin.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = `${p.nome} (${p.banca || '—'})`;
+      select.appendChild(opt);
+    });
+  }
+
+  async function carregarArquivos() {
+    document.getElementById('loading-arquivos').style.display    = 'flex';
+    document.getElementById('lista-arquivos').innerHTML          = '';
+    document.getElementById('empty-arquivos').style.display      = 'none';
+
+    const filtroProvaId = document.getElementById('filtro-prova-admin').value;
+
+    try {
+      // Busca notas com arquivo em todas as provas (ou prova específica)
+      const provasParaBuscar = filtroProvaId
+        ? todasProvasAdmin.filter(p => p.id === filtroProvaId)
+        : todasProvasAdmin;
+
+      const arquivos = [];
+
+      await Promise.all(provasParaBuscar.map(async (prova) => {
+        const notasSnap = await db.collection('provas').doc(prova.id)
+          .collection('notas')
+          .where('arquivoUrl', '!=', null)
+          .get();
+
+        notasSnap.docs.forEach(doc => {
+          const nota = doc.data();
+          if (nota.arquivoUrl) {
+            arquivos.push({
+              notaId: doc.id,
+              provaId: prova.id,
+              provaNome: prova.nome,
+              arquivoUrl:  nota.arquivoUrl,
+              arquivoNome: nota.arquivoNome || 'arquivo',
+              enviadoPor:  nota.nomeExibicao || nota.nomeReal || 'Anônimo',
+              enviadoEm:   nota.enviadoEm
+            });
+          }
+        });
+      }));
+
+      document.getElementById('badge-provas').textContent = arquivos.length;
+      document.getElementById('total-arquivos').textContent =
+        `${arquivos.length} arquivo${arquivos.length !== 1 ? 's' : ''} encontrado${arquivos.length !== 1 ? 's' : ''}`;
+
+      if (arquivos.length === 0) {
+        document.getElementById('empty-arquivos').style.display = 'block';
+      } else {
+        renderizarArquivos(arquivos);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      document.getElementById('loading-arquivos').style.display = 'none';
+    }
+  }
+
+  function renderizarArquivos(arquivos) {
+    const lista = document.getElementById('lista-arquivos');
+    lista.innerHTML = '';
+
+    arquivos.forEach(arq => {
+      const isPdf = arq.arquivoNome?.toLowerCase().endsWith('.pdf');
+      const icone = isPdf ? '📄' : '🖼️';
+
+      const div = document.createElement('div');
+      div.className = 'arquivo-linha';
+      div.innerHTML = `
+        <div class="tipo-icon">${icone}</div>
+        <div class="info">
+          <div class="nome">${arq.arquivoNome}</div>
+          <div class="prova-ref">📋 ${arq.provaNome}</div>
+          <div class="meta">Enviado por: ${arq.enviadoPor} · ${arq.enviadoEm ? formatarData(arq.enviadoEm) : '—'}</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <a href="${arq.arquivoUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-azul btn-sm">
+            📥 Baixar
+          </a>
+          <button class="btn btn-outline-pink btn-sm"
+            onclick="solicitarExclusao('arquivo', '${arq.provaId}', '${arq.notaId}', '${arq.arquivoUrl}')">
+            🗑️ Excluir
+          </button>
+        </div>
+      `;
+      lista.appendChild(div);
+    });
+  }
+
+  async function carregarRankingsAdmin() {
+    document.getElementById('loading-rankings-admin').style.display = 'flex';
+    document.getElementById('tabela-rankings-admin').style.display  = 'none';
+    document.getElementById('empty-rankings-admin').style.display   = 'none';
+
+    if (todasProvasAdmin.length === 0) {
+      document.getElementById('loading-rankings-admin').style.display = 'none';
+      document.getElementById('empty-rankings-admin').style.display   = 'block';
+      return;
+    }
+
+    const tbody = document.getElementById('tbody-rankings-admin');
+    tbody.innerHTML = '';
+
+    todasProvasAdmin.forEach(prova => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${prova.nome}</strong></td>
+        <td>${prova.banca || '—'}</td>
+        <td>${prova.dataProva ? new Date(prova.dataProva + 'T12:00:00').toLocaleDateString('pt-BR') : '—'}</td>
+        <td><span style="color:var(--pink);font-weight:bold;">${prova.totalParticipantes || 0}</span></td>
+        <td>
+          <a href="ranking.html?id=${prova.id}" class="btn btn-outline btn-sm" style="font-size:12px;">Ver</a>
+          <button class="btn btn-outline-pink btn-sm" style="font-size:12px;margin-left:4px;"
+            onclick="solicitarExclusao('ranking', '${prova.id}', null, null, '${prova.nome}')">
+            🗑️
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById('loading-rankings-admin').style.display = 'none';
+    document.getElementById('tabela-rankings-admin').style.display  = 'block';
+  }
+
+  // Tabs
+  function mostrarTab(tab) {
+    document.getElementById('tab-provas').style.display   = tab === 'provas'   ? 'block' : 'none';
+    document.getElementById('tab-rankings').style.display = tab === 'rankings' ? 'block' : 'none';
+    document.getElementById('tab-provas-btn').classList.toggle('ativo',   tab === 'provas');
+    document.getElementById('tab-rankings-btn').classList.toggle('ativo', tab === 'rankings');
+
+    if (tab === 'rankings') carregarRankingsAdmin();
+  }
+
+  // Exclusão
+  let dadosExclusao = null;
+
+  function solicitarExclusao(tipo, provaId, notaId, arquivoUrl, nomeRanking) {
+    dadosExclusao = { tipo, provaId, notaId, arquivoUrl, nomeRanking };
+    const msg = tipo === 'arquivo'
+      ? 'Deseja excluir este arquivo enviado pelo aluno?'
+      : `Deseja excluir o ranking "${nomeRanking}" e todos os dados relacionados?`;
+    document.getElementById('modal-excluir-msg').textContent = msg;
+    document.getElementById('modal-excluir').classList.add('aberto');
+  }
+
+  function fecharModalExcluir() {
+    document.getElementById('modal-excluir').classList.remove('aberto');
+    dadosExclusao = null;
+  }
+
+  async function confirmarExclusao() {
+    if (!dadosExclusao) return;
+
+    const btn = document.getElementById('btn-confirmar-excluir');
+    btn.textContent = 'Excluindo...';
+    btn.disabled = true;
+
+    try {
+      if (dadosExclusao.tipo === 'arquivo') {
+        // Remove URL do arquivo da nota (não deleta a nota)
+        await db.collection('provas').doc(dadosExclusao.provaId)
+          .collection('notas').doc(dadosExclusao.notaId)
+          .update({ arquivoUrl: null, arquivoNome: null });
+
+        // Remove do Storage
+        if (dadosExclusao.arquivoUrl) {
+          try {
+            const ref = storage.refFromURL(dadosExclusao.arquivoUrl);
+            await ref.delete();
+          } catch (e) { /* ignora se já foi removido */ }
+        }
+        showToast('Arquivo excluído.', 'success');
+        await carregarArquivos();
+
+      } else if (dadosExclusao.tipo === 'ranking') {
+        // Exclui todas as notas da prova e depois a prova
+        const notasSnap = await db.collection('provas').doc(dadosExclusao.provaId)
+          .collection('notas').get();
+
+        const batch = db.batch();
+        notasSnap.docs.forEach(doc => batch.delete(doc.ref));
+        batch.delete(db.collection('provas').doc(dadosExclusao.provaId));
+        await batch.commit();
+
+        showToast('Ranking excluído com sucesso.', 'success');
+        todasProvasAdmin = todasProvasAdmin.filter(p => p.id !== dadosExclusao.provaId);
+        await carregarRankingsAdmin();
+      }
+
+    } catch (e) {
+      console.error(e);
+      showToast('Erro ao excluir. Tente novamente.', 'error');
+    } finally {
+      btn.textContent = 'Excluir';
+      btn.disabled = false;
+      fecharModalExcluir();
+    }
+  }
+
+  document.getElementById('modal-excluir').addEventListener('click', function(e) {
+    if (e.target === this) fecharModalExcluir();
+  });
+
+  async function fazerLogout() {
+    if (confirm('Deseja sair?')) {
+      await auth.signOut();
+      window.location.href = 'index.html';
+    }
+  }
+</script>
+
+</body>
+</html>

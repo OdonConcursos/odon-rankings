@@ -1,0 +1,58 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // =============================================
+    // FUNÇÕES AUXILIARES
+    // =============================================
+
+    function estaAutenticado() {
+      return request.auth != null;
+    }
+
+    // Lista de emails admin — mantenha sincronizada com firestore.rules
+    function ehAdmin() {
+      return estaAutenticado() &&
+        request.auth.token.email in [
+          'michelecostaor@gmail.com'
+          // Adicione outros emails admin aqui
+        ];
+    }
+
+    // =============================================
+    // PASTA: provas/
+    // Upload: qualquer pessoa pode enviar (para a pasta da prova correta)
+    // Leitura: apenas admins
+    // Exclusão: apenas admins
+    // Restrições: tamanho máx 10MB, apenas PDF/imagens
+    // =============================================
+    match /provas/{provaId}/{fileName} {
+
+      // Somente admins podem LER (baixar) arquivos de provas
+      allow read: if ehAdmin();
+
+      // Qualquer pessoa pode fazer upload, com restrições
+      allow create: if
+        // Tamanho máximo: 10MB
+        request.resource.size <= 10 * 1024 * 1024 &&
+        // Apenas PDF, JPEG e PNG (parênteses necessários para precedência correta)
+        (request.resource.contentType.matches('application/pdf') ||
+         request.resource.contentType.matches('image/jpeg') ||
+         request.resource.contentType.matches('image/png'));
+
+      // Somente admins podem excluir
+      allow delete: if ehAdmin();
+
+      // Não permite atualização (substitua com novo upload)
+      allow update: if false;
+    }
+
+    // =============================================
+    // Bloqueia qualquer outro caminho não mapeado
+    // =============================================
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

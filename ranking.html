@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ranking | OdonConcursos</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      padding: 14px 20px; border-radius: 8px; font-size: 14px;
+      font-family: Arial, sans-serif; color: #fff;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      transform: translateY(80px); opacity: 0;
+      transition: all 0.3s; z-index: 300;
+    }
+    .toast.visivel { transform: translateY(0); opacity: 1; }
+    .toast-success { background: #28a745; }
+    .toast-error   { background: #dc3545; }
+    .toast-info    { background: #1a1b4b; }
+
+    .acoes-ranking {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .minha-posicao-banner {
+      background: linear-gradient(135deg, var(--azul), var(--azul-claro));
+      color: #fff;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .minha-posicao-banner .pos-num {
+      font-size: 36px;
+      font-weight: bold;
+      color: var(--pink);
+      min-width: 48px;
+      text-align: center;
+    }
+
+    .minha-posicao-banner .pos-info h4 {
+      font-size: 16px;
+      margin-bottom: 2px;
+    }
+
+    .minha-posicao-banner .pos-info p {
+      font-size: 13px;
+      opacity: 0.8;
+    }
+
+    .disc-expandida {
+      margin-top: 6px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .disc-item-expandido {
+      background: rgba(26,27,75,0.06);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 12px;
+      color: var(--azul);
+    }
+
+    .nota-total {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--pink);
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <a href="index.html" class="header-logo">
+    <span>
+      OdonConcursos
+      <span class="logo-sub">Rankings de Provas</span>
+    </span>
+  </a>
+  <nav class="header-nav">
+    <div id="nav-deslogado">
+      <a href="auth.html" class="btn-header btn-header-outline">Entrar</a>
+      <a href="auth.html?tab=cadastro" class="btn-header btn-header-pink">Criar conta</a>
+    </div>
+    <div id="nav-logado" class="d-none" style="display:flex;align-items:center;gap:8px;">
+      <a href="history.html" class="btn-header btn-header-outline">Meu histórico</a>
+      <a href="admin.html" id="link-admin" class="btn-header btn-header-outline d-none">Painel Admin</a>
+      <div class="user-avatar" id="user-iniciais" onclick="fazerLogout()" title="Sair">?</div>
+    </div>
+  </nav>
+</header>
+
+<div class="container">
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="index.html">🏠 Início</a>
+    <span class="sep">›</span>
+    <span id="breadcrumb-nome">Carregando...</span>
+  </div>
+
+  <!-- Cabeçalho do ranking -->
+  <div id="loading-header" class="loading">
+    <div class="spinner"></div>
+    <span>Carregando ranking...</span>
+  </div>
+
+  <div id="ranking-header" class="ranking-header" style="display:none;">
+    <div class="ranking-info">
+      <h2 id="prova-nome">—</h2>
+      <div style="margin-top:8px;">
+        <span class="banca-badge" id="prova-banca">—</span>
+        <span class="data-badge" id="prova-data">—</span>
+      </div>
+    </div>
+    <div>
+      <div class="ranking-stats">
+        <div class="stat-box">
+          <div class="stat-num" id="stat-participantes">0</div>
+          <div class="stat-label">Participantes</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="stat-media">—</div>
+          <div class="stat-label">Média geral</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="stat-top">—</div>
+          <div class="stat-label">Maior nota</div>
+        </div>
+      </div>
+      <div class="acoes-ranking" style="margin-top:14px;">
+        <button class="btn btn-pink" onclick="irEnviarNota()">📝 Enviar minha nota</button>
+        <button class="btn btn-outline-pink btn-sm" id="btn-editar" style="display:none;" onclick="irEditarNota()">✏️ Editar minha nota</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Minha posição (se já enviou nota) -->
+  <div id="minha-posicao-banner" class="minha-posicao-banner" style="display:none;">
+    <div class="pos-num" id="minha-pos-num">—</div>
+    <div class="pos-info">
+      <h4>Sua posição no ranking</h4>
+      <p id="minha-pos-desc">—</p>
+    </div>
+  </div>
+
+  <!-- Tabela de ranking -->
+  <div id="tabela-container" class="table-container" style="display:none;">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:60px;">Pos.</th>
+          <th>Candidato</th>
+          <th style="width:120px;">Nota total</th>
+          <th>Acertos por disciplina</th>
+          <th style="width:100px;">Data</th>
+        </tr>
+      </thead>
+      <tbody id="ranking-tbody"></tbody>
+    </table>
+  </div>
+
+  <div id="empty-ranking" class="empty-state" style="display:none;">
+    <div class="empty-icon">🏆</div>
+    <h3>Nenhuma nota enviada ainda</h3>
+    <p>Seja o primeiro a registrar sua nota nesse ranking!</p>
+    <br>
+    <button class="btn btn-pink" onclick="irEnviarNota()">📝 Enviar minha nota</button>
+  </div>
+
+</div>
+
+<div id="toast" class="toast"></div>
+
+<footer>
+  <strong>OdonConcursos</strong> &mdash; Rankings de Provas &copy; 2025
+</footer>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+
+<script>
+  const params  = new URLSearchParams(window.location.search);
+  const provaId = params.get('id');
+
+  if (!provaId) window.location.href = 'index.html';
+
+  let provaData   = null;
+  let minhaEntrada = null;
+
+  async function carregarRanking() {
+    try {
+      // Carrega dados da prova
+      const provaSnap = await db.collection('provas').doc(provaId).get();
+      if (!provaSnap.exists) {
+        alert('Prova não encontrada.');
+        window.location.href = 'index.html';
+        return;
+      }
+      provaData = { id: provaSnap.id, ...provaSnap.data() };
+
+      // Atualiza header
+      document.getElementById('breadcrumb-nome').textContent = provaData.nome;
+      document.getElementById('prova-nome').textContent      = provaData.nome;
+      document.getElementById('prova-banca').textContent     = provaData.banca || '—';
+      document.getElementById('prova-data').textContent      = provaData.dataProva
+        ? '📅 ' + new Date(provaData.dataProva + 'T12:00:00').toLocaleDateString('pt-BR')
+        : '';
+      document.title = provaData.nome + ' | OdonConcursos';
+
+      // Carrega notas
+      const notasSnap = await db.collection('provas').doc(provaId)
+        .collection('notas')
+        .orderBy('notaTotal', 'desc')
+        .get();
+
+      const notas = notasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      // Estatísticas
+      document.getElementById('stat-participantes').textContent = notas.length;
+      if (notas.length > 0) {
+        const media = notas.reduce((s, n) => s + (n.notaTotal || 0), 0) / notas.length;
+        document.getElementById('stat-media').textContent = media.toFixed(1);
+        document.getElementById('stat-top').textContent   = notas[0].notaTotal?.toFixed(1) || '—';
+      }
+
+      // Verifica se usuário já enviou nota
+      const token = getAnonToken();
+      const uid   = currentUser?.uid;
+      minhaEntrada = notas.find(n =>
+        (uid && n.userId === uid) || n.anonToken === token
+      );
+
+      if (minhaEntrada) {
+        document.getElementById('btn-editar').style.display = 'inline-flex';
+        // Minha posição
+        const minhaPosicao = notas.findIndex(n => n.id === minhaEntrada.id) + 1;
+        document.getElementById('minha-pos-num').textContent = `#${minhaPosicao}`;
+        document.getElementById('minha-pos-desc').textContent =
+          `Você está em ${minhaPosicao}º lugar de ${notas.length} participante${notas.length !== 1 ? 's' : ''}`;
+        document.getElementById('minha-posicao-banner').style.display = 'flex';
+      }
+
+      // Renderiza tabela
+      renderizarTabela(notas, uid, token);
+
+      // Mostra conteúdo
+      document.getElementById('loading-header').style.display = 'none';
+      document.getElementById('ranking-header').style.display = 'flex';
+
+      if (notas.length === 0) {
+        document.getElementById('empty-ranking').style.display = 'block';
+      } else {
+        document.getElementById('tabela-container').style.display = 'block';
+      }
+
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  function renderizarTabela(notas, uid, token) {
+    const tbody = document.getElementById('ranking-tbody');
+    tbody.innerHTML = '';
+
+    notas.forEach((nota, index) => {
+      const pos = index + 1;
+      const ehMeu = (uid && nota.userId === uid) || nota.anonToken === token;
+
+      let medalha = '';
+      if (pos === 1) medalha = '🥇';
+      else if (pos === 2) medalha = '🥈';
+      else if (pos === 3) medalha = '🥉';
+
+      // Disciplinas
+      let discsHtml = '';
+      if (nota.disciplinas && nota.disciplinas.length > 0) {
+        const discsVisiveis = nota.disciplinas.filter(d => d.acertos !== '' && d.acertos !== null && d.acertos !== undefined);
+        if (discsVisiveis.length > 0) {
+          discsHtml = `<div class="disc-expandida">` +
+            discsVisiveis.map(d =>
+              `<span class="disc-item-expandido">${d.nome}: <strong>${d.acertos}</strong></span>`
+            ).join('') +
+            `</div>`;
+        }
+      }
+
+      const tr = document.createElement('tr');
+      if (ehMeu) tr.style.background = 'rgba(212,39,106,0.05)';
+
+      tr.innerHTML = `
+        <td>
+          <span class="posicao posicao-${pos <= 3 ? pos : ''}">${medalha || pos + 'º'}</span>
+        </td>
+        <td>
+          <strong>${nota.nomeExibicao || '—'}</strong>
+          ${ehMeu ? '<span class="tag-voce">você</span>' : ''}
+        </td>
+        <td><span class="nota-total">${nota.notaTotal != null ? nota.notaTotal.toFixed(1) : '—'}</span></td>
+        <td style="font-size:13px;color:var(--cinza-texto);">
+          ${nota.disciplinas?.length > 0 ? discsHtml : '<span style="color:#ccc;">—</span>'}
+        </td>
+        <td style="font-size:12px;color:var(--cinza-texto);">
+          ${nota.enviadoEm ? formatarData(nota.enviadoEm) : '—'}
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function irEnviarNota() {
+    window.location.href = `submit.html?provaId=${provaId}`;
+  }
+
+  function irEditarNota() {
+    if (minhaEntrada) {
+      window.location.href = `submit.html?provaId=${provaId}&notaId=${minhaEntrada.id}`;
+    }
+  }
+
+  async function fazerLogout() {
+    if (confirm('Deseja sair da sua conta?')) {
+      await auth.signOut();
+      location.reload();
+    }
+  }
+
+  // Aguarda auth antes de carregar
+  auth.onAuthStateChanged(() => {
+    carregarRanking();
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,88 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // =============================================
+    // FUNÇÕES AUXILIARES
+    // =============================================
+
+    // Verifica se o usuário está autenticado
+    function estaAutenticado() {
+      return request.auth != null;
+    }
+
+    // Verifica se o email do usuário está na lista de admins
+    // IMPORTANTE: Atualize essa lista com os emails reais da equipe Odon
+    function ehAdmin() {
+      return estaAutenticado() &&
+        request.auth.token.email in [
+          'michelecostaor@gmail.com'
+          // Adicione outros emails admin aqui
+        ];
+    }
+
+    // Verifica se o token anônimo é válido (não vazio, tem prefixo correto)
+    function tokenAnonValido(token) {
+      return token is string && token.size() > 10 && token.matches('anon_.*');
+    }
+
+    // =============================================
+    // COLEÇÃO: provas
+    // Qualquer pessoa pode ler e criar provas.
+    // Apenas admins podem atualizar/excluir.
+    // =============================================
+    match /provas/{provaId} {
+      allow read: if true;
+      allow create: if true; // qualquer pessoa pode criar um ranking novo
+
+      // Atualização de totalParticipantes: apenas pelo próprio sistema (campo específico)
+      allow update: if ehAdmin() ||
+        (request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['totalParticipantes']));
+
+      allow delete: if ehAdmin();
+
+      // =============================================
+      // SUB-COLEÇÃO: notas
+      // Qualquer pessoa pode ler e criar notas.
+      // Edição: apenas o dono (por userId OU anonToken).
+      // Exclusão: apenas admins.
+      // =============================================
+      match /notas/{notaId} {
+        allow read: if true;
+
+        allow create: if
+          // Não permite campos sensíveis extras
+          !('senhaHash' in request.resource.data) &&
+          !('cpf' in request.resource.data) &&
+          !('rg' in request.resource.data) &&
+          // Nota deve ter campo obrigatório
+          request.resource.data.keys().hasAll(['nomeExibicao', 'notaTotal']) &&
+          // Nota total deve ser número não negativo
+          request.resource.data.notaTotal is number &&
+          request.resource.data.notaTotal >= 0;
+
+        allow update: if
+          // Apenas o dono logado pode editar sua nota
+          (estaAutenticado() && resource.data.userId == request.auth.uid) ||
+          // Ou quem tem o token anônimo correto
+          (resource.data.anonToken != null &&
+           tokenAnonValido(resource.data.anonToken) &&
+           request.resource.data.anonToken == resource.data.anonToken) ||
+          // Ou admin
+          ehAdmin();
+
+        allow delete: if ehAdmin();
+      }
+    }
+
+    // =============================================
+    // Bloqueia acesso a qualquer outro documento
+    // que não esteja explicitamente permitido acima
+    // =============================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
