@@ -52,9 +52,9 @@ const storage = firebase.storage();
 // ---- Admins: emails com acesso à área restrita ----
 // Adicione os emails da equipe Odon que terão acesso ao painel admin
 const ADMIN_EMAILS = [
-  "michelecostaor@gmail.com"
-  // Adicione mais emails aqui, ex:
-  // "outro@odonconcursos.com.br"
+  "michelecostaor@gmail.com",
+  "adm.odonconcursos@gmail.com",
+  "odonconcursosvendas@gmail.com"
 ];
 
 // Verifica se o usuário atual é admin
@@ -131,5 +131,4 @@ function showToast(mensagem, tipo = 'success') {
   if (!toast) return;
   toast.textContent = mensagem;
   toast.className = `toast toast-${tipo} visivel`;
-  setTimeout(() => toast.classList.remove('visivel'), 3500);
-}
+  setTimeout(() => toast.classList

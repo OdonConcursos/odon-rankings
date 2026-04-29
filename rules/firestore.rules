@@ -17,8 +17,9 @@ service cloud.firestore {
     function ehAdmin() {
       return estaAutenticado() &&
         request.auth.token.email in [
-          'michelecostaor@gmail.com'
-          // Adicione outros emails admin aqui
+          'michelecostaor@gmail.com',
+          'adm.odonconcursos@gmail.com',
+          'odonconcursosvendas@gmail.com'
         ];
     }
 
@@ -82,7 +83,4 @@ service cloud.firestore {
     // que não esteja explicitamente permitido acima
     // =============================================
     match /{document=**} {
-      allow read, write: if false;
-    }
-  }
-}
+      allo
