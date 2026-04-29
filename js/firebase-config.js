@@ -131,4 +131,7 @@ function showToast(mensagem, tipo = 'success') {
   if (!toast) return;
   toast.textContent = mensagem;
   toast.className = `toast toast-${tipo} visivel`;
-  setTimeout(() => toast.classList
+  setTimeout(() => toast.classList.remove('visivel'), 3500);
+}
+.remove('visivel'), 3500);
+}
