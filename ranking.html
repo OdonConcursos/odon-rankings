@@ -241,7 +241,7 @@
       const token = getAnonToken();
       const uid   = currentUser?.uid;
       minhaEntrada = notas.find(n =>
-        (uid && n.userId === uid) || n.anonToken === token
+        uid ? n.userId === uid : n.anonToken === token
       );
 
       if (minhaEntrada) {
@@ -278,7 +278,7 @@
 
     notas.forEach((nota, index) => {
       const pos = index + 1;
-      const ehMeu = (uid && nota.userId === uid) || nota.anonToken === token;
+      const ehMeu = uid ? nota.userId === uid : nota.anonToken === token;
 
       let medalha = '';
       if (pos === 1) medalha = '🥇';
