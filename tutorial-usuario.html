@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Como usar o Rankings | OdonConcursos</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f4f6fb;
+      color: #222;
+      line-height: 1.7;
+    }
+
+    header {
+      background: #1a1b4b;
+      color: #fff;
+      padding: 32px 24px 28px;
+      text-align: center;
+    }
+    header .logo { font-size: 1.5rem; font-weight: 800; letter-spacing: 1px; }
+    header .logo span { color: #D4276A; }
+    header h1 { font-size: 2rem; margin-top: 12px; font-weight: 700; }
+    header p { margin-top: 8px; opacity: .85; font-size: 1.05rem; }
+
+    .container { max-width: 820px; margin: 0 auto; padding: 40px 20px 60px; }
+
+    .intro-box {
+      background: #fff;
+      border-left: 5px solid #D4276A;
+      border-radius: 10px;
+      padding: 22px 28px;
+      margin-bottom: 40px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    }
+    .intro-box p { font-size: 1.05rem; }
+
+    .step-section { margin-bottom: 48px; }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .step-num {
+      background: #D4276A;
+      color: #fff;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .step-header h2 { font-size: 1.3rem; color: #1a1b4b; font-weight: 700; }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px 28px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.07);
+    }
+
+    .steps-list { counter-reset: step-counter; list-style: none; }
+    .steps-list li {
+      counter-increment: step-counter;
+      display: flex;
+      gap: 14px;
+      margin-bottom: 16px;
+      align-items: flex-start;
+    }
+    .steps-list li::before {
+      content: counter(step-counter);
+      background: #1a1b4b;
+      color: #fff;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .8rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .steps-list li span { font-size: 1rem; }
+    .steps-list li strong { color: #1a1b4b; }
+
+    .tip-box {
+      background: #f0f4ff;
+      border: 1px solid #c7d4ff;
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-top: 16px;
+      font-size: .95rem;
+      color: #1a1b4b;
+    }
+    .tip-box strong { color: #D4276A; }
+
+    .option-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 4px;
+    }
+    .option-card {
+      border: 2px solid #e8eaf6;
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .option-card h4 { color: #1a1b4b; margin-bottom: 6px; font-size: .95rem; }
+    .option-card p { font-size: .88rem; color: #555; }
+
+    .faq-item { margin-bottom: 20px; }
+    .faq-item h4 { color: #1a1b4b; font-size: 1rem; margin-bottom: 6px; }
+    .faq-item p { color: #444; font-size: .95rem; }
+
+    .link-btn {
+      display: inline-block;
+      background: #D4276A;
+      color: #fff;
+      padding: 14px 32px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1.05rem;
+      margin-top: 8px;
+      transition: background .2s;
+    }
+    .link-btn:hover { background: #b81f59; }
+
+    .cta-box {
+      background: #1a1b4b;
+      color: #fff;
+      border-radius: 14px;
+      padding: 32px;
+      text-align: center;
+      margin-top: 48px;
+    }
+    .cta-box h3 { font-size: 1.4rem; margin-bottom: 10px; }
+    .cta-box p { opacity: .85; margin-bottom: 20px; }
+
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: .85rem;
+      color: #888;
+    }
+
+    @media (max-width: 600px) {
+      .option-grid { grid-template-columns: 1fr; }
+      header h1 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Odon<span>Concursos</span></div>
+  <h1>Como usar o Rankings de Provas</h1>
+  <p>Guia completo para candidatos — compare seu desempenho e acompanhe sua evolução</p>
+</header>
+
+<div class="container">
+
+  <div class="intro-box">
+    <p>O <strong>Rankings OdonConcursos</strong> é uma plataforma onde você envia sua nota de provas de concursos odontológicos e descobre como está se saindo em comparação com outros candidatos. Tudo gratuito, simples e sem precisar de cadastro para ver os rankings!</p>
+  </div>
+
+  <!-- PASSO 1 -->
+  <div class="step-section">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <h2>Acessando o site</h2>
+    </div>
+    <div class="card">
+      <ul class="steps-list">
+        <li><span>Abra o navegador e acesse: <strong>https://odonconcursos.github.io/odon-rankings/</strong></span></li>
+        <li><span>Na página inicial você verá todos os <strong>rankings disponíveis</strong> — uma card para cada prova cadastrada.</span></li>
+        <li><span>Use a <strong>barra de busca</strong> para encontrar uma prova específica pelo nome ou pela banca organizadora.</span></li>
+      </ul>
+      <div class="tip-box">
+        <strong>💡 Dica:</strong> Você pode navegar pelos rankings e ver todas as notas <strong>sem precisar criar conta</strong>. O cadastro só é necessário para enviar sua própria nota.
+      </div>
+    </div>
+  </div>
+
+  <!-- PASSO 2 -->
+  <div class="step-section">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <h2>Criando sua conta (opcional, mas recomendado)</h2>
+    </div>
+    <div class="card">
+      <p style="margin-bottom:16px;">Ter uma conta permite que você edite sua nota depois, acesse seu histórico em qualquer dispositivo e apareça com seu nome no ranking.</p>
+      <ul class="steps-list">
+        <li><span>Clique em <strong>"Criar conta"</strong> no canto superior direito da página.</span></li>
+        <li><span>Escolha uma das opções de cadastro:</span></li>
+      </ul>
+      <div class="option-grid" style="margin-top:12px; margin-bottom:16px;">
+        <div class="option-card">
+          <h4>📧 E-mail e senha</h4>
+          <p>Preencha seu nome, e-mail e crie uma senha. Simples e rápido.</p>
+        </div>
+        <div class="option-card">
+          <h4>🔵 Entrar com Google</h4>
+          <p>Use sua conta Google — sem precisar criar senha nova.</p>
+        </div>
+      </div>
+      <ul class="steps-list">
+        <li><span>Após o cadastro, você será redirecionado automaticamente para o site já logado.</span></li>
+      </ul>
+      <div class="tip-box">
+        <strong>🔒 Privacidade:</strong> Ao enviar sua nota, você pode marcar a opção <strong>"Exibir apenas minhas iniciais"</strong> para que só as iniciais do seu nome apareçam no ranking público.
+      </div>
+    </div>
+  </div>
+
+  <!-- PASSO 3 -->
+  <div class="step-section">
+    <div class="step-header">
+      <div class="step-num">3</div>
+      <h2>Fazendo login</h2>
+    </div>
+    <div class="card">
+      <ul class="steps-list">
+        <li><span>Clique em <strong>"Entrar"</strong> no canto superior direito.</span></li>
+        <li><span>Digite seu e-mail e senha, ou clique em <strong>"Continuar com Google"</strong>.</span></li>
+        <li><span>Ao logar, seu avatar com as iniciais aparece no canto superior direito — sinal de que está conectado.</span></li>
+      </ul>
+      <div class="tip-box">
+        <strong>Esqueceu a senha?</strong> Na tela de login, clique em <strong>"Esqueci minha senha"</strong>. Você receberá um link de redefinição no seu e-mail.
+      </div>
+    </div>
+  </div>
+
+  <!-- PASSO 4 -->
+  <div class="step-section">
+    <div class="step-header">
+      <div class="step-num">4</div>
+      <h2>Enviando sua nota</h2>
+    </div>
+    <div class="card">
+      <ul class="steps-list">
+        <li><span>Na página inicial, clique no card da prova que você realizou.</span></li>
+        <li><span>Dentro do ranking, clique no botão <strong>"Enviar minha nota"</strong>.</span></li>
+        <li><span>Preencha os campos:</span></li>
+      </ul>
+      <ul style="margin: 12px 0 12px 32px; color: #444; font-size:.95rem;">
+        <li style="margin-bottom:6px;"><strong>Seu nome</strong> — como quer aparecer no ranking</li>
+        <li style="margin-bottom:6px;"><strong>Nota total</strong> — sua pontuação final na prova (obrigatório)</li>
+        <li style="margin-bottom:6px;"><strong>Acertos por disciplina</strong> — quantas questões acertou em cada área (opcional)</li>
+        <li style="margin-bottom:6px;"><strong>Enviar prova</strong> — anexe o PDF ou imagem da sua prova para comprovar (opcional)</li>
+        <li style="margin-bottom:6px;"><strong>Sou aluno(a) OdonConcursos</strong> — marque essa opção se você é aluno(a) da OdonConcursos (opcional)</li>
+      </ul>
+      <ul class="steps-list">
+        <li><span>Clique em <strong>"Enviar nota"</strong>. Você será redirecionado para o ranking atualizado com sua posição!</span></li>
+      </ul>
+      <div class="tip-box">
+        <strong>🎓 Aluno(a) Odon:</strong> Se você marcou a opção acima, um badge especial <strong>"🎓 Aluno(a) Odon"</strong> vai aparecer ao lado do seu nome no ranking — uma forma de identificar quem faz parte da comunidade OdonConcursos!
+      </div>
+      <div class="tip-box" style="margin-top:10px;">
+        <strong>💡 Sem conta?</strong> Você ainda pode enviar nota mesmo sem cadastro. Mas atenção: guarde o link do ranking, pois só conseguirá editar sua nota no mesmo navegador e dispositivo.
+      </div>
+    </div>
+  </div>
+
+  <!-- PASSO 5 -->
+  <div class="step-section">
+    <div class="step-header">
+      <div class="step-num">5</div>
+      <h2>Vendo e entendendo o ranking</h2>
+    </div>
+    <div class="card">
+      <ul class="steps-list">
+        <li><span>Clique no card de qualquer prova na página inicial para abrir o ranking completo.</span></li>
+        <li><span>No topo você verá: <strong>total de participantes</strong>, <strong>média geral</strong> e <strong>maior nota</strong>.</span></li>
+        <li><span>Se você já enviou nota, um banner destacado mostrará <strong>sua posição atual</strong> no ranking.</span></li>
+        <li><span>A tabela exibe todos os candidatos em ordem da maior para a menor nota, com medalhas para o top 3.</span></li>
+        <li><span>A coluna <strong>"Acertos por disciplina"</strong> mostra o detalhamento de cada candidato (quando informado).</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- PASSO 6 -->
+  <div class="step-section">
+    <div class="step-header">
+      <div class="step-num">6</div>
+      <h2>Editando sua nota</h2>
+    </div>
+    <div class="card">
+      <ul class="steps-list">
+        <li><span>Abra o ranking da prova em que enviou sua nota.</span></li>
+        <li><span>Clique no botão <strong>"Editar minha nota"</strong> — ele aparece apenas para você.</span></li>
+        <li><span>Altere as informações que desejar e clique em <strong>"Salvar alterações"</strong>.</span></li>
+      </ul>
+      <div class="tip-box">
+        <strong>ℹ️ Importante:</strong> Para editar é preciso estar no mesmo navegador/dispositivo onde enviou (se não tiver conta), ou estar logado com a mesma conta.
+      </div>
+    </div>
+  </div>
+
+  <!-- PASSO 7 -->
+  <div class="step-section">
+    <div class="step-header">
+      <div class="step-num">7</div>
+      <h2>Acompanhando seu histórico</h2>
+    </div>
+    <div class="card">
+      <ul class="steps-list">
+        <li><span>Clique em <strong>"Meu histórico"</strong> no menu superior (disponível apenas para usuários logados).</span></li>
+        <li><span>Você verá um resumo com: provas participadas, melhor posição, maior nota e média geral.</span></li>
+        <li><span>Abaixo, a lista de todas as provas em que participou com sua nota e posição em cada uma.</span></li>
+        <li><span>Clique em <strong>"Ver ranking"</strong> para abrir o ranking completo daquela prova, ou em <strong>"Editar nota"</strong> para atualizar.</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="step-section">
+    <div class="step-header">
+      <div class="step-num">❓</div>
+      <h2>Dúvidas frequentes</h2>
+    </div>
+    <div class="card">
+      <div class="faq-item">
+        <h4>Preciso pagar para usar?</h4>
+        <p>Não. O Rankings OdonConcursos é totalmente gratuito para todos os candidatos.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Minha nota fica pública para todos?</h4>
+        <p>Sim, mas você controla como seu nome aparece. Marque "Exibir apenas minhas iniciais" para manter mais privacidade.</p>
+      </div>
+      <div class="faq-item">
+        <h4>A prova que enviei fica visível para outros usuários?</h4>
+        <p>Não. As provas enviadas (PDF/imagem) ficam acessíveis apenas para a equipe OdonConcursos, para verificação.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Não encontrei o ranking da minha prova. O que faço?</h4>
+        <p>Você mesmo pode criar o ranking! Na página inicial, clique em <strong>"+ Criar novo ranking"</strong>, preencha os dados da prova e pronto — outras pessoas já poderão enviar notas.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Posso enviar nota em mais de uma prova?</h4>
+        <p>Sim! Você pode participar de quantos rankings quiser. Cada um é independente.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Perdi o acesso ao meu cadastro. O que faço?</h4>
+        <p>Na tela de login, use a opção <strong>"Esqueci minha senha"</strong> para receber um link de redefinição no seu e-mail.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="cta-box">
+    <h3>Pronto para começar?</h3>
+    <p>Acesse o site, encontre o ranking da sua prova e veja onde você está!</p>
+    <a class="link-btn" href="https://odonconcursos.github.io/odon-rankings/" target="_blank">Acessar o Rankings</a>
+  </div>
+
+</div>
+
+<footer>
+  OdonConcursos — Rankings de Provas &copy; 2026 &nbsp;|&nbsp; Dúvidas? Entre em contato com a equipe OdonConcursos.
+</footer>
+
+</body>
+</html>

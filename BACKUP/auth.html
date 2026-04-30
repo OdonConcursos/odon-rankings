@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrar | OdonConcursos Rankings</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      padding: 14px 20px; border-radius: 8px; font-size: 14px;
+      font-family: Arial, sans-serif; color: #fff;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      transform: translateY(80px); opacity: 0;
+      transition: all 0.3s; z-index: 300;
+    }
+    .toast.visivel { transform: translateY(0); opacity: 1; }
+    .toast-success { background: #28a745; }
+    .toast-error   { background: #dc3545; }
+    .toast-info    { background: #1a1b4b; }
+
+    .senha-wrapper {
+      position: relative;
+    }
+    .senha-wrapper input {
+      padding-right: 44px;
+    }
+    .toggle-senha {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      color: var(--cinza-texto);
+      padding: 4px;
+    }
+
+    .divider {
+      text-align: center;
+      color: var(--cinza-texto);
+      font-size: 13px;
+      margin: 20px 0;
+      position: relative;
+    }
+    .divider::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 50%;
+      width: 42%; height: 1px;
+      background: var(--cinza-medio);
+    }
+    .divider::after {
+      content: '';
+      position: absolute;
+      right: 0; top: 50%;
+      width: 42%; height: 1px;
+      background: var(--cinza-medio);
+    }
+
+    .btn-google {
+      width: 100%;
+      padding: 11px 16px;
+      border: 1.5px solid var(--cinza-medio);
+      border-radius: 8px;
+      background: var(--branco);
+      font-size: 14px;
+      font-family: Arial, sans-serif;
+      font-weight: bold;
+      color: #3c4043;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s;
+    }
+    .btn-google:hover {
+      background: #f8f9fa;
+      border-color: #aaa;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .link-voltar {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      font-size: 13px;
+      color: var(--cinza-texto);
+    }
+    .link-voltar a {
+      color: var(--azul-claro);
+      text-decoration: none;
+    }
+    .link-voltar a:hover { text-decoration: underline; }
+
+    .requisitos-senha {
+      font-size: 12px;
+      color: var(--cinza-texto);
+      margin-top: 6px;
+    }
+    .req { display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+    .req.ok  { color: var(--verde); }
+    .req.nok { color: #dc3545; }
+  </style>
+</head>
+<body>
+
+<div class="auth-wrapper">
+  <div class="auth-card">
+
+    <!-- Logo -->
+    <div class="auth-logo">
+      <h1>OdonConcursos</h1>
+      <span>Rankings de Provas</span>
+    </div>
+
+    <!-- Abas Login / Cadastro -->
+    <div class="auth-tabs">
+      <div class="auth-tab" id="tab-login" onclick="mostrarAba('login')">Entrar</div>
+      <div class="auth-tab" id="tab-cadastro" onclick="mostrarAba('cadastro')">Criar conta</div>
+    </div>
+
+    <!-- ===== LOGIN ===== -->
+    <div id="form-login">
+      <div class="form-group">
+        <label>E-mail</label>
+        <input type="email" class="form-control" id="login-email" placeholder="seu@email.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>Senha</label>
+        <div class="senha-wrapper">
+          <input type="password" class="form-control" id="login-senha" placeholder="Sua senha" autocomplete="current-password"
+            onkeydown="if(event.key==='Enter') fazerLogin()">
+          <button class="toggle-senha" onclick="toggleSenha('login-senha', this)" type="button">👁️</button>
+        </div>
+      </div>
+
+      <div style="text-align:right;margin-bottom:16px;">
+        <a href="#" onclick="mostrarRecuperacao()" style="font-size:13px;color:var(--azul-claro);text-decoration:none;">
+          Esqueci minha senha
+        </a>
+      </div>
+
+      <button class="btn btn-pink" style="width:100%;" id="btn-login" onclick="fazerLogin()">
+        Entrar
+      </button>
+
+      <div class="divider">ou</div>
+
+      <button class="btn-google" id="btn-google-login" onclick="entrarComGoogle()">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20" height="20">
+        Continuar com Google
+      </button>
+
+      <p style="text-align:center;font-size:13px;color:var(--cinza-texto);margin-top:16px;">
+        Não tem conta? <a href="#" onclick="mostrarAba('cadastro')" style="color:var(--pink);font-weight:bold;text-decoration:none;">Criar conta grátis</a>
+      </p>
+    </div>
+
+    <!-- ===== CADASTRO ===== -->
+    <div id="form-cadastro" style="display:none;">
+      <div class="form-group">
+        <label>Seu nome <span style="color:#dc3545;">*</span></label>
+        <input type="text" class="form-control" id="cad-nome" placeholder="Como quer ser chamado" autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label>E-mail <span style="color:#dc3545;">*</span></label>
+        <input type="email" class="form-control" id="cad-email" placeholder="seu@email.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>Senha <span style="color:#dc3545;">*</span></label>
+        <div class="senha-wrapper">
+          <input type="password" class="form-control" id="cad-senha" placeholder="Mínimo 6 caracteres"
+            autocomplete="new-password" oninput="verificarRequisitos()">
+          <button class="toggle-senha" onclick="toggleSenha('cad-senha', this)" type="button">👁️</button>
+        </div>
+        <div class="requisitos-senha" id="requisitos">
+          <div class="req" id="req-tamanho">○ Mínimo 6 caracteres</div>
+          <div class="req" id="req-letra">○ Pelo menos uma letra</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Confirmar senha <span style="color:#dc3545;">*</span></label>
+        <div class="senha-wrapper">
+          <input type="password" class="form-control" id="cad-senha2" placeholder="Repita a senha"
+            autocomplete="new-password" onkeydown="if(event.key==='Enter') fazerCadastro()">
+          <button class="toggle-senha" onclick="toggleSenha('cad-senha2', this)" type="button">👁️</button>
+        </div>
+      </div>
+
+      <button class="btn btn-pink" style="width:100%;margin-top:8px;" id="btn-cadastro" onclick="fazerCadastro()">
+        Criar conta
+      </button>
+
+      <div class="divider">ou</div>
+
+      <button class="btn-google" onclick="entrarComGoogle()">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20" height="20">
+        Cadastrar com Google
+      </button>
+
+      <p style="text-align:center;font-size:12px;color:var(--cinza-texto);margin-top:12px;">
+        Ao criar conta você concorda com o uso dos seus dados apenas para funcionalidades da plataforma. Não compartilhamos seus dados com terceiros.
+      </p>
+    </div>
+
+    <!-- ===== RECUPERAÇÃO ===== -->
+    <div id="form-recuperacao" style="display:none;">
+      <p style="font-size:14px;color:var(--cinza-texto);margin-bottom:16px;">
+        Informe seu e-mail e enviaremos um link para você redefinir sua senha.
+      </p>
+      <div class="form-group">
+        <label>E-mail</label>
+        <input type="email" class="form-control" id="rec-email" placeholder="seu@email.com"
+          onkeydown="if(event.key==='Enter') enviarRecuperacao()">
+      </div>
+      <button class="btn btn-azul" style="width:100%;" id="btn-rec" onclick="enviarRecuperacao()">
+        Enviar link de recuperação
+      </button>
+      <div style="text-align:center;margin-top:12px;">
+        <a href="#" onclick="mostrarAba('login')" style="font-size:13px;color:var(--azul-claro);text-decoration:none;">
+          ← Voltar ao login
+        </a>
+      </div>
+    </div>
+
+    <div class="link-voltar">
+      <a href="index.html">← Voltar para os rankings</a>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script>
+  async function entrarComGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    const btns = document.querySelectorAll('.btn-google');
+    btns.forEach(b => { b.disabled = true; b.style.opacity = '0.7'; });
+
+    try {
+      await auth.signInWithPopup(provider);
+      showToast('Login realizado com sucesso!', 'success');
+      const redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
+      setTimeout(() => window.location.href = redirect, 800);
+    } catch (e) {
+      if (e.code !== 'auth/popup-closed-by-user') {
+        showToast(traduzirErroAuth(e.code), 'error');
+      }
+    } finally {
+      btns.forEach(b => { b.disabled = false; b.style.opacity = '1'; });
+    }
+  }
+</script>
+
+<script>
+  const tabParam = new URLSearchParams(window.location.search).get('tab');
+
+  function mostrarAba(aba) {
+    document.getElementById('form-login').style.display      = aba === 'login'    ? 'block' : 'none';
+    document.getElementById('form-cadastro').style.display   = aba === 'cadastro' ? 'block' : 'none';
+    document.getElementById('form-recuperacao').style.display = 'none';
+    document.getElementById('tab-login').classList.toggle('ativo',    aba === 'login');
+    document.getElementById('tab-cadastro').classList.toggle('ativo', aba === 'cadastro');
+  }
+
+  function mostrarRecuperacao() {
+    document.getElementById('form-login').style.display      = 'none';
+    document.getElementById('form-recuperacao').style.display = 'block';
+  }
+
+  function toggleSenha(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (input.type === 'password') {
+      input.type = 'text';
+      btn.textContent = '🙈';
+    } else {
+      input.type = 'password';
+      btn.textContent = '👁️';
+    }
+  }
+
+  function verificarRequisitos() {
+    const senha = document.getElementById('cad-senha').value;
+    const reqTam  = document.getElementById('req-tamanho');
+    const reqLetra = document.getElementById('req-letra');
+    reqTam.className   = senha.length >= 6          ? 'req ok' : 'req nok';
+    reqTam.textContent = (senha.length >= 6 ? '✓' : '✗') + ' Mínimo 6 caracteres';
+    const temLetra = /[a-zA-Z]/.test(senha);
+    reqLetra.className   = temLetra ? 'req ok' : 'req nok';
+    reqLetra.textContent = (temLetra ? '✓' : '✗') + ' Pelo menos uma letra';
+  }
+
+  async function fazerLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    const senha = document.getElementById('login-senha').value;
+
+    if (!email || !senha) {
+      showToast('Preencha e-mail e senha.', 'error');
+      return;
+    }
+
+    const btn = document.getElementById('btn-login');
+    btn.textContent = 'Entrando...';
+    btn.disabled = true;
+
+    try {
+      await auth.signInWithEmailAndPassword(email, senha);
+      showToast('Login realizado com sucesso!', 'success');
+      const redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
+      setTimeout(() => window.location.href = redirect, 800);
+    } catch (e) {
+      const msg = traduzirErroAuth(e.code);
+      showToast(msg, 'error');
+    } finally {
+      btn.textContent = 'Entrar';
+      btn.disabled = false;
+    }
+  }
+
+  async function fazerCadastro() {
+    const nome  = document.getElementById('cad-nome').value.trim();
+    const email = document.getElementById('cad-email').value.trim();
+    const senha = document.getElementById('cad-senha').value;
+    const senha2 = document.getElementById('cad-senha2').value;
+
+    if (!nome || !email || !senha || !senha2) {
+      showToast('Preencha todos os campos.', 'error');
+      return;
+    }
+    if (senha.length < 6) {
+      showToast('A senha deve ter no mínimo 6 caracteres.', 'error');
+      return;
+    }
+    if (!/[a-zA-Z]/.test(senha)) {
+      showToast('A senha deve conter pelo menos uma letra.', 'error');
+      return;
+    }
+    if (senha !== senha2) {
+      showToast('As senhas não coincidem.', 'error');
+      return;
+    }
+
+    const btn = document.getElementById('btn-cadastro');
+    btn.textContent = 'Criando conta...';
+    btn.disabled = true;
+
+    try {
+      const cred = await auth.createUserWithEmailAndPassword(email, senha);
+      await cred.user.updateProfile({ displayName: nome });
+      showToast('Conta criada com sucesso! Bem-vindo(a)!', 'success');
+      const redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
+      setTimeout(() => window.location.href = redirect, 900);
+    } catch (e) {
+      const msg = traduzirErroAuth(e.code);
+      showToast(msg, 'error');
+    } finally {
+      btn.textContent = 'Criar conta';
+      btn.disabled = false;
+    }
+  }
+
+  async function enviarRecuperacao() {
+    const email = document.getElementById('rec-email').value.trim();
+    if (!email) {
+      showToast('Informe seu e-mail.', 'error');
+      return;
+    }
+
+    const btn = document.getElementById('btn-rec');
+    btn.textContent = 'Enviando...';
+    btn.disabled = true;
+
+    try {
+      await auth.sendPasswordResetEmail(email);
+      showToast('E-mail enviado! Verifique sua caixa de entrada.', 'success');
+      setTimeout(() => mostrarAba('login'), 1500);
+    } catch (e) {
+      showToast(traduzirErroAuth(e.code), 'error');
+    } finally {
+      btn.textContent = 'Enviar link de recuperação';
+      btn.disabled = false;
+    }
+  }
+
+  function traduzirErroAuth(code) {
+    const erros = {
+      'auth/user-not-found':         'E-mail não encontrado.',
+      'auth/wrong-password':         'Senha incorreta.',
+      'auth/email-already-in-use':   'Este e-mail já está cadastrado.',
+      'auth/invalid-email':          'E-mail inválido.',
+      'auth/weak-password':          'Senha muito fraca.',
+      'auth/too-many-requests':      'Muitas tentativas. Tente novamente mais tarde.',
+      'auth/network-request-failed': 'Erro de conexão. Verifique sua internet.',
+      'auth/invalid-credential':     'E-mail ou senha incorretos.',
+    };
+    return erros[code] || 'Ocorreu um erro. Tente novamente.';
+  }
+
+  // Redireciona se já logado
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      const redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
+      window.location.href = redirect;
+    }
+  });
+
+  // Aba inicial
+  mostrarAba(tabParam === 'cadastro' ? 'cadastro' : 'login');
+</script>
+
+</body>
+</html>
