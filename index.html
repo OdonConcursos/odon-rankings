@@ -143,6 +143,13 @@
 <script>
   let todasProvas = [];
 
+  function formatarData(data) {
+    if (!data) return 'Data não informada';
+    const partes = data.split('-');
+    if (partes.length !== 3) return data;
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+  }
+
   // Carrega provas do Firestore
   async function carregarProvas() {
     document.getElementById('loading-cards').style.display = 'flex';
@@ -207,7 +214,7 @@
       card.href = `ranking.html?id=${p.id}`;
       card.className = 'card-prova';
       card.innerHTML = `
-        <div class="card-data">📅 ${p.dataProva || 'Data não informada'}</div>
+        <div class="card-data">📅 ${formatarData(p.dataProva)}</div>
         <div class="card-banca">${p.banca || 'Banca não informada'}</div>
         <div class="card-nome">${p.nome}</div>
         <div class="card-participantes">

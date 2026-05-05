@@ -66,12 +66,13 @@ URL do site: **https://odonconcursos.github.io/odon-rankings/**
 19. ✅ Checkbox "Sou aluno(a) OdonConcursos" adicionado no formulário de envio de nota (submit.html)
 20. ✅ Badge "🎓 Aluno(a) Odon" exibido no ranking ao lado de quem marcou o checkbox
 21. ✅ Campo `alunoOdon` salvo no Firestore junto com cada nota
-22. ✅ Tutoriais (público e interno) atualizados com as novas funcionalidades
+22. ✅ Tutoriais (público e interno) atualizados com as novas funcionalidades (05/05/2026)
 
 ## O que ainda falta fazer ❌
 
 ### PRIORIDADE 1 — Tarefas pendentes
 - [ ] Adicionar o link https://odonconcursos.github.io/odon-rankings/ no menu do Circle
+- ~~Publicar as regras do Firestore no Firebase Console~~ — CONCLUÍDO em 05/05/2026. Coleção `usuarios` e regra de sugestão de inscritos já ativas.
 - ~~Deletar usuário de teste (`aluno.teste.odon@gmail.com`)~~ — CANCELADO: site já está em uso por usuários reais, não deletar nada do Firebase para não correr risco de perda de dados
 - ~~Deletar prova de teste "Cirurgião-Dentista — CFMV 2026"~~ — CANCELADO pelo mesmo motivo acima. O ranking de teste já foi deletado manualmente.
 
@@ -81,7 +82,9 @@ URL do site: **https://odonconcursos.github.io/odon-rankings/**
 
 - [x] **Captação de leads no painel admin** — aba "Leads" no `admin.html` lista usuários da coleção `usuarios` (Firestore) que nunca marcaram "Sou aluno(a) Odon". Exibe nome, e-mail, data de cadastro e provas participadas. Botão "Exportar CSV". Perfis são salvos no Firestore automaticamente no cadastro/login.
 
-- [x] **Posição estimada no ranking** — exibida em `ranking.html` quando `totalInscritos` está preenchido na prova. Fórmula: `(posição / total envios) × total inscritos`. Usuários logados podem sugerir inscritos (não verificado). Admin confirma/edita no painel admin (aba Rankings). Regras do Firestore atualizadas.
+- [x] **Posição estimada no ranking** — exibida em `ranking.html` quando `totalInscritos` está preenchido na prova. Visível apenas para o candidato que enviou a nota (dentro do banner pessoal). Fórmula: `(posição / total envios) × total inscritos`. Usuários logados podem sugerir inscritos (não verificado). Admin confirma/edita no painel admin (aba Rankings). Regras do Firestore atualizadas.
+
+- [x] **Tutoriais atualizados** — `tutorial-usuario.html` e `tutorial-interno.html` atualizados para refletir login obrigatório, remoção da opção de envio anônimo, posição estimada e aba Leads.
 
 #### Arquivos modificados (Prioridade 2)
 - `submit.html` — bloqueio de acesso a não-logados
@@ -89,6 +92,8 @@ URL do site: **https://odonconcursos.github.io/odon-rankings/**
 - `ranking.html` — posição estimada + modal de sugestão de inscritos + box de inscritos
 - `admin.html` — aba Leads (com exportação CSV) + coluna inscritos na aba Rankings
 - `rules/firestore.rules` — coleção `usuarios` + regra para sugestão de inscritos
+- `tutorial-usuario.html` — atualizado: conta obrigatória, posição estimada, removida menção a envio anônimo
+- `tutorial-interno.html` — atualizado: fluxo de login, aba Leads, gerenciamento de inscritos, data 05/05/2026
 
 ## Bug corrigido em 29/04/2026
 **Problema:** A lógica de identificação do usuário no `ranking.html` usava `||` entre userId e anonToken,
