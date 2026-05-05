@@ -262,6 +262,7 @@
       <h3>Enviar nota em um ranking</h3>
       <ul class="steps-list">
         <li><span>Abrir o ranking da prova desejada e clicar em <strong>"Enviar minha nota"</strong>.</span></li>
+        <li><span>Se não estiver logado, o site redireciona automaticamente para a tela de login com uma mensagem explicativa. Após o login, o usuário é devolvido ao formulário de envio.</span></li>
         <li><span>Preencher o <strong>nome de exibição</strong> (pode marcar "apenas minhas iniciais" para privacidade).</span></li>
         <li><span>Digitar a <strong>nota total</strong> (obrigatório) e acertos por disciplina (opcional).</span></li>
         <li><span>Anexar o PDF ou imagem da prova via campo <strong>"Enviar prova"</strong> (opcional).</span></li>
@@ -269,6 +270,7 @@
         <li><span>Clicar em <strong>"Enviar nota"</strong> — ranking atualiza na hora com a nova posição.</span></li>
       </ul>
       <div class="tip"><strong>💡 Badge Aluno(a) Odon:</strong> O campo <code>alunoOdon: true/false</code> fica salvo no Firestore junto com a nota. O badge rosa aparece ao lado do nome no ranking para facilitar a identificação dos alunos da OdonConcursos.</div>
+      <div class="tip" style="margin-top:10px;"><strong>💡 Envios anônimos anteriores:</strong> Notas enviadas antes de 05/05/2026 (quando o login ainda era opcional) foram preservadas e continuam visíveis no ranking. Porém, o dono não consegue mais editá-las sem criar uma conta.</div>
     </div>
 
     <div class="card">
@@ -278,7 +280,7 @@
         <li><span>Clicar no botão <strong>"Editar minha nota"</strong> (visível apenas para quem enviou).</span></li>
         <li><span>Alterar os campos desejados e clicar em <strong>"Salvar alterações"</strong>.</span></li>
       </ul>
-      <div class="warn"><strong>⚠️ Atenção:</strong> Usuários sem conta só conseguem editar no mesmo navegador/dispositivo. Se trocar de dispositivo, perdem o acesso à edição (a nota permanece no ranking, mas não podem mais alterar).</div>
+      <div class="tip"><strong>💡</strong> Para editar é preciso estar logado com a mesma conta usada ao enviar a nota.</div>
     </div>
 
     <div class="card">
@@ -324,13 +326,26 @@
     </div>
 
     <div class="card">
-      <h3>Aba "Rankings" — Gerenciar provas e notas</h3>
+      <h3>Aba "Rankings" — Gerenciar provas, inscritos e notas</h3>
       <ul class="steps-list">
         <li><span>No Painel Admin, clicar na aba <strong>"Rankings"</strong>.</span></li>
-        <li><span>Ver a lista de todas as provas cadastradas com número de participantes.</span></li>
+        <li><span>Ver a lista de todas as provas cadastradas com número de participantes e total de inscritos.</span></li>
+        <li><span>Na coluna <strong>"Inscritos"</strong>, clicar em <strong>"Editar"</strong> para definir ou confirmar o total de inscritos daquela prova. Esse número é usado para calcular a posição estimada dos candidatos no concurso real.</span></li>
+        <li><span>Usuários logados podem sugerir o total de inscritos — mas a sugestão fica marcada como "não verificado" até que um admin confirme.</span></li>
         <li><span>Clicar em <strong>"Ver ranking"</strong> para abrir o ranking completo de cada prova.</span></li>
         <li><span>No ranking de uma prova, admins têm o botão <strong>"Excluir"</strong> em cada nota para removê-la se necessário.</span></li>
       </ul>
+    </div>
+
+    <div class="card">
+      <h3>Aba "Leads" — Captação de potenciais alunos</h3>
+      <ul class="steps-list">
+        <li><span>No Painel Admin, clicar na aba <strong>"Leads"</strong>.</span></li>
+        <li><span>A lista exibe todos os usuários cadastrados que <strong>nunca marcaram</strong> "Sou aluno(a) OdonConcursos" em nenhum envio — ou seja, candidatos que ainda não são alunos.</span></li>
+        <li><span>Para cada lead você verá: <strong>nome</strong>, <strong>e-mail</strong>, <strong>data de cadastro</strong> e <strong>provas participadas</strong>.</span></li>
+        <li><span>Clicar em <strong>"Exportar CSV"</strong> para baixar a lista completa em planilha — útil para ações de marketing e abordagem comercial.</span></li>
+      </ul>
+      <div class="tip"><strong>💡 Como os leads aparecem:</strong> Sempre que um candidato cria conta ou faz login, o perfil dele é salvo automaticamente no Firestore (coleção <code>usuarios</code>). A aba Leads filtra esses perfis comparando com o campo <code>alunoOdon</code> das notas enviadas.</div>
     </div>
 
     <div class="card">
@@ -542,7 +557,7 @@ git push</pre>
 
 <footer>
   OdonConcursos — Manual Interno do Rankings &copy; 2026 &nbsp;|&nbsp;
-  Documento de uso exclusivo da equipe. Atualizado em 29/04/2026.
+  Documento de uso exclusivo da equipe. Atualizado em 05/05/2026.
 </footer>
 
 <script>
