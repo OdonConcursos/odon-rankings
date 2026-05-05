@@ -116,6 +116,27 @@
       border-radius: 10px;
       margin-left: 6px;
     }
+
+    .badge-inscritos {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 10px;
+      margin-left: 4px;
+    }
+    .badge-inscritos.verificado   { background: #d4edda; color: #155724; }
+    .badge-inscritos.nao-verificado { background: #fff3cd; color: #856404; }
+
+    .leads-info-box {
+      background: linear-gradient(135deg, #e8f4fd, #d6eaf8);
+      border: 1.5px solid #5dade2;
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: #1a5276;
+    }
   </style>
 </head>
 <body>
@@ -186,6 +207,9 @@
       <button class="tab-admin-item" id="tab-rankings-btn" onclick="mostrarTab('rankings')">
         🏆 Rankings <span class="badge-count" id="badge-rankings">0</span>
       </button>
+      <button class="tab-admin-item" id="tab-leads-btn" onclick="mostrarTab('leads')">
+        🎯 Leads <span class="badge-count" id="badge-leads">0</span>
+      </button>
     </div>
 
     <!-- Tab: Provas enviadas -->
@@ -225,8 +249,9 @@
               <th>Nome da prova</th>
               <th>Banca</th>
               <th>Data</th>
-              <th style="width:120px;">Participantes</th>
-              <th style="width:120px;">Ações</th>
+              <th style="width:110px;">Participantes</th>
+              <th style="width:170px;">Inscritos</th>
+              <th style="width:130px;">Ações</th>
             </tr>
           </thead>
           <tbody id="tbody-rankings-admin"></tbody>
@@ -239,6 +264,68 @@
       </div>
     </div>
 
+    <!-- Tab: Leads -->
+    <div id="tab-leads" style="display:none;">
+      <div class="leads-info-box">
+        <strong>O que são leads?</strong> Usuários cadastrados na plataforma que nunca marcaram "Sou aluno(a) Odon" em nenhum envio. São potenciais alunos que vale contatar.
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+        <span id="total-leads-texto" style="font-size:13px;color:var(--cinza-texto);"></span>
+        <button class="btn btn-outline" onclick="exportarLeadsCSV()" id="btn-export-leads" style="display:none;">
+          📥 Exportar CSV
+        </button>
+      </div>
+
+      <div id="loading-leads" class="loading" style="display:none;">
+        <div class="spinner"></div>
+        <span>Carregando leads...</span>
+      </div>
+
+      <div class="table-container" id="tabela-leads" style="display:none;">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>E-mail</th>
+              <th style="width:130px;">Cadastro</th>
+              <th>Provas participadas</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-leads"></tbody>
+        </table>
+      </div>
+
+      <div id="empty-leads" class="empty-state" style="display:none;">
+        <div class="empty-icon">🎉</div>
+        <h3>Nenhum lead encontrado</h3>
+        <p>Todos os usuários cadastrados já são alunos OdonConcursos!</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal: editar inscritos (admin) -->
+<div class="modal-overlay" id="modal-inscritos-admin">
+  <div class="modal">
+    <h3>📊 Editar número de inscritos</h3>
+    <p style="font-size:13px;color:var(--cinza-texto);margin-bottom:16px;">
+      Informe o total de inscritos na prova. Marque como "verificado" quando o valor for confirmado oficialmente.
+    </p>
+    <div class="form-group">
+      <label>Total de inscritos</label>
+      <input type="number" class="form-control" id="modal-inscritos-admin-valor"
+        placeholder="Ex: 5000" min="1" max="9999999" style="max-width:200px;">
+    </div>
+    <label class="checkbox-label" style="margin-bottom:16px;">
+      <input type="checkbox" id="modal-inscritos-admin-verificado">
+      Marcar como verificado (valor confirmado pela equipe)
+    </label>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="fecharModalInscritosAdmin()">Cancelar</button>
+      <button class="btn btn-pink" onclick="salvarInscritosAdmin()">Salvar</button>
+    </div>
   </div>
 </div>
 
@@ -407,12 +494,34 @@
     tbody.innerHTML = '';
 
     todasProvasAdmin.forEach(prova => {
+      // Célula de inscritos
+      let inscritosHtml;
+      if (prova.totalInscritos) {
+        const statusClass = prova.totalInscritosVerificado ? 'verificado' : 'nao-verificado';
+        const statusLabel = prova.totalInscritosVerificado ? '✅ verificado' : '⚠️ não verificado';
+        inscritosHtml = `
+          <span style="color:var(--azul);font-weight:bold;">${prova.totalInscritos.toLocaleString('pt-BR')}</span>
+          <span class="badge-inscritos ${statusClass}">${statusLabel}</span><br>
+          <button class="btn btn-outline btn-sm" style="font-size:11px;margin-top:4px;"
+            onclick="abrirModalInscritosAdmin('${prova.id}', ${prova.totalInscritos}, ${!!prova.totalInscritosVerificado})">
+            ✏️ Editar
+          </button>`;
+      } else {
+        inscritosHtml = `
+          <span style="color:#ccc;font-size:12px;">Não informado</span><br>
+          <button class="btn btn-outline btn-sm" style="font-size:11px;margin-top:4px;"
+            onclick="abrirModalInscritosAdmin('${prova.id}', null, false)">
+            + Adicionar
+          </button>`;
+      }
+
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td><strong>${prova.nome}</strong></td>
         <td>${prova.banca || '—'}</td>
         <td>${prova.dataProva ? new Date(prova.dataProva + 'T12:00:00').toLocaleDateString('pt-BR') : '—'}</td>
         <td><span style="color:var(--pink);font-weight:bold;">${prova.totalParticipantes || 0}</span></td>
+        <td>${inscritosHtml}</td>
         <td>
           <a href="ranking.html?id=${prova.id}" class="btn btn-outline btn-sm" style="font-size:12px;">Ver</a>
           <button class="btn btn-outline-pink btn-sm" style="font-size:12px;margin-left:4px;"
@@ -428,14 +537,177 @@
     document.getElementById('tabela-rankings-admin').style.display  = 'block';
   }
 
+  // Gestão de inscritos (admin)
+  let provaInscritosId = null;
+
+  function abrirModalInscritosAdmin(provaId, valorAtual, verificado) {
+    provaInscritosId = provaId;
+    document.getElementById('modal-inscritos-admin-valor').value         = valorAtual || '';
+    document.getElementById('modal-inscritos-admin-verificado').checked  = verificado || false;
+    document.getElementById('modal-inscritos-admin').classList.add('aberto');
+  }
+
+  function fecharModalInscritosAdmin() {
+    document.getElementById('modal-inscritos-admin').classList.remove('aberto');
+    provaInscritosId = null;
+  }
+
+  async function salvarInscritosAdmin() {
+    const valor     = parseInt(document.getElementById('modal-inscritos-admin-valor').value);
+    const verificado = document.getElementById('modal-inscritos-admin-verificado').checked;
+
+    if (!valor || valor < 1) {
+      showToast('Informe um número válido de inscritos.', 'error');
+      return;
+    }
+
+    const btn = document.querySelector('#modal-inscritos-admin .btn-pink');
+    btn.textContent = 'Salvando...';
+    btn.disabled = true;
+
+    try {
+      await db.collection('provas').doc(provaInscritosId).update({
+        totalInscritos:           valor,
+        totalInscritosVerificado: verificado
+      });
+      showToast('Inscritos atualizados com sucesso!', 'success');
+      fecharModalInscritosAdmin();
+      // Recarrega lista de provas e reexibe rankings
+      const snap = await db.collection('provas').orderBy('criadaEm', 'desc').get();
+      todasProvasAdmin = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      await carregarRankingsAdmin();
+    } catch(e) {
+      console.error(e);
+      showToast('Erro ao salvar. Tente novamente.', 'error');
+    } finally {
+      btn.textContent = 'Salvar';
+      btn.disabled = false;
+    }
+  }
+
+  document.getElementById('modal-inscritos-admin').addEventListener('click', function(e) {
+    if (e.target === this) fecharModalInscritosAdmin();
+  });
+
+  // Leads
+  let leadsData = [];
+
+  async function carregarLeads() {
+    document.getElementById('loading-leads').style.display  = 'flex';
+    document.getElementById('tabela-leads').style.display   = 'none';
+    document.getElementById('empty-leads').style.display    = 'none';
+    document.getElementById('btn-export-leads').style.display = 'none';
+    document.getElementById('total-leads-texto').textContent  = '';
+
+    try {
+      // 1. Carrega todos os perfis de usuários cadastrados
+      const usuariosSnap = await db.collection('usuarios').get();
+      const usuarios = usuariosSnap.docs.map(d => ({ uid: d.id, ...d.data() }));
+
+      // 2. Carrega todas as notas de todas as provas e agrupa por userId
+      const notasPorUsuario = {}; // uid -> { temAlunoOdon: bool, provas: [] }
+
+      await Promise.all(todasProvasAdmin.map(async (prova) => {
+        const notasSnap = await db.collection('provas').doc(prova.id)
+          .collection('notas').get();
+
+        notasSnap.docs.forEach(doc => {
+          const nota = doc.data();
+          if (!nota.userId) return; // ignora envios anônimos
+          if (!notasPorUsuario[nota.userId]) {
+            notasPorUsuario[nota.userId] = { temAlunoOdon: false, provas: [] };
+          }
+          if (nota.alunoOdon) notasPorUsuario[nota.userId].temAlunoOdon = true;
+          notasPorUsuario[nota.userId].provas.push(prova.nome);
+        });
+      }));
+
+      // 3. Filtra: excluir admins e quem já marcou alunoOdon
+      const adminEmails = ['michelecostaor@gmail.com', 'adm.odonconcursos@gmail.com', 'odonconcursosvendas@gmail.com'];
+
+      leadsData = usuarios
+        .filter(u => {
+          if (adminEmails.includes((u.email || '').toLowerCase())) return false;
+          const notasUser = notasPorUsuario[u.uid];
+          return !notasUser || !notasUser.temAlunoOdon;
+        })
+        .map(u => ({
+          ...u,
+          provasParticipadas: [...new Set(notasPorUsuario[u.uid]?.provas || [])]
+        }));
+
+      document.getElementById('badge-leads').textContent = leadsData.length;
+      document.getElementById('total-leads-texto').textContent =
+        `${leadsData.length} lead${leadsData.length !== 1 ? 's' : ''} encontrado${leadsData.length !== 1 ? 's' : ''}`;
+
+      if (leadsData.length === 0) {
+        document.getElementById('empty-leads').style.display = 'block';
+      } else {
+        renderizarLeads(leadsData);
+        document.getElementById('tabela-leads').style.display   = 'block';
+        document.getElementById('btn-export-leads').style.display = 'inline-flex';
+      }
+
+    } catch(e) {
+      console.error(e);
+      showToast('Erro ao carregar leads. Verifique as permissões do Firestore.', 'error');
+    } finally {
+      document.getElementById('loading-leads').style.display = 'none';
+    }
+  }
+
+  function renderizarLeads(leads) {
+    const tbody = document.getElementById('tbody-leads');
+    tbody.innerHTML = '';
+    leads.forEach(lead => {
+      const cadastro = lead.criadoEm ? formatarData(lead.criadoEm) : '—';
+      const provas   = lead.provasParticipadas.length > 0
+        ? lead.provasParticipadas.join(', ')
+        : '<span style="color:#ccc;">Nenhum envio</span>';
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${lead.nome || '—'}</strong></td>
+        <td>${lead.email || '—'}</td>
+        <td>${cadastro}</td>
+        <td style="font-size:13px;color:var(--cinza-texto);">${provas}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function exportarLeadsCSV() {
+    if (!leadsData.length) return;
+    const cabecalho = ['Nome', 'Email', 'Data de cadastro', 'Provas participadas'];
+    const linhas = leadsData.map(l => [
+      l.nome || '',
+      l.email || '',
+      l.criadoEm ? formatarData(l.criadoEm) : '',
+      l.provasParticipadas.join('; ')
+    ]);
+    const csv = [cabecalho, ...linhas]
+      .map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `leads-odon-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('CSV exportado com sucesso!', 'success');
+  }
+
   // Tabs
   function mostrarTab(tab) {
     document.getElementById('tab-provas').style.display   = tab === 'provas'   ? 'block' : 'none';
     document.getElementById('tab-rankings').style.display = tab === 'rankings' ? 'block' : 'none';
+    document.getElementById('tab-leads').style.display    = tab === 'leads'    ? 'block' : 'none';
     document.getElementById('tab-provas-btn').classList.toggle('ativo',   tab === 'provas');
     document.getElementById('tab-rankings-btn').classList.toggle('ativo', tab === 'rankings');
+    document.getElementById('tab-leads-btn').classList.toggle('ativo',    tab === 'leads');
 
     if (tab === 'rankings') carregarRankingsAdmin();
+    if (tab === 'leads')    carregarLeads();
   }
 
   // Exclusão

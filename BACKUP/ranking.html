@@ -69,6 +69,20 @@
       color: var(--azul);
     }
 
+
+    .badge-odon {
+      display: inline-block;
+      background: var(--pink);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 10px;
+      margin-left: 6px;
+      vertical-align: middle;
+      letter-spacing: 0.3px;
+    }
+
     .nota-total {
       font-size: 18px;
       font-weight: bold;
@@ -87,6 +101,7 @@
     </span>
   </a>
   <nav class="header-nav">
+    <a href="tutorial-usuario.html" class="btn-header btn-header-outline">Como usar</a>
     <div id="nav-deslogado">
       <a href="auth.html" class="btn-header btn-header-outline">Entrar</a>
       <a href="auth.html?tab=cadastro" class="btn-header btn-header-pink">Criar conta</a>
@@ -308,6 +323,7 @@
         <td>
           <strong>${nota.nomeExibicao || '—'}</strong>
           ${ehMeu ? '<span class="tag-voce">você</span>' : ''}
+          ${nota.alunoOdon ? '<span class="badge-odon">🎓 Aluno(a) Odon</span>' : ''}
         </td>
         <td><span class="nota-total">${nota.notaTotal != null ? nota.notaTotal.toFixed(1) : '—'}</span></td>
         <td style="font-size:13px;color:var(--cinza-texto);">

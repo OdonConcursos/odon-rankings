@@ -46,6 +46,7 @@
     </span>
   </a>
   <nav class="header-nav">
+    <a href="tutorial-usuario.html" class="btn-header btn-header-outline">Como usar</a>
     <div id="nav-deslogado">
       <a href="auth.html" class="btn-header btn-header-outline">Entrar</a>
       <a href="auth.html?tab=cadastro" class="btn-header btn-header-pink">Criar conta</a>
@@ -100,6 +101,10 @@
         <label class="checkbox-label" style="margin-top:8px;">
           <input type="checkbox" id="check-iniciais" onchange="toggleIniciais()">
           Exibir apenas minhas iniciais neste ranking
+        </label>
+        <label class="checkbox-label" style="margin-top:8px;">
+          <input type="checkbox" id="check-aluno-odon">
+          Sou aluno(a) OdonConcursos
         </label>
         <div id="preview-nome" style="margin-top:8px;font-size:13px;color:var(--cinza-texto);display:none;">
           Será exibido como: <strong id="preview-nome-texto">—</strong>
@@ -339,6 +344,7 @@
     const nome      = document.getElementById('campo-nome').value.trim();
     const notaTotal = parseFloat(document.getElementById('campo-nota').value);
     const iniciais  = document.getElementById('check-iniciais').checked;
+    const alunoOdon = document.getElementById('check-aluno-odon').checked;
 
     if (!nome) {
       showToast('Informe seu nome.', 'error');
@@ -377,6 +383,7 @@
         nomeReal:     nome,
         nomeExibicao,
         mostrarIniciais: iniciais,
+        alunoOdon,
         notaTotal,
         disciplinas: disciplinasLimpas,
         userId:    currentUser ? currentUser.uid : null,
@@ -452,6 +459,7 @@
           document.getElementById('campo-nome').value = notaExistente.nomeReal || '';
           document.getElementById('campo-nota').value = notaExistente.notaTotal || '';
           document.getElementById('check-iniciais').checked = notaExistente.mostrarIniciais || false;
+          document.getElementById('check-aluno-odon').checked = notaExistente.alunoOdon || false;
           atualizarPreviewNome();
           inicializarDisciplinas(notaExistente.disciplinas);
         }

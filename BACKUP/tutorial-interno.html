@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manual Interno — Rankings OdonConcursos</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f8; color: #222; line-height: 1.7; }
+
+    header { background: #1a1b4b; color: #fff; padding: 36px 24px 30px; text-align: center; }
+    header .logo { font-size: 1.4rem; font-weight: 800; letter-spacing: 1px; }
+    header .logo span { color: #D4276A; }
+    header h1 { font-size: 2rem; margin-top: 10px; font-weight: 700; }
+    header p { margin-top: 8px; opacity: .8; }
+    .badge { display: inline-block; background: #D4276A; color: #fff; padding: 4px 14px; border-radius: 20px; font-size: .8rem; font-weight: 700; margin-top: 12px; letter-spacing: 1px; }
+
+    nav {
+      background: #fff;
+      border-bottom: 2px solid #e8eaf6;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+    }
+    nav a {
+      display: block;
+      padding: 16px 20px;
+      color: #1a1b4b;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: .9rem;
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+      transition: all .2s;
+    }
+    nav a:hover, nav a.active { color: #D4276A; border-bottom-color: #D4276A; }
+
+    .container { max-width: 900px; margin: 0 auto; padding: 40px 20px 80px; }
+
+    .section { margin-bottom: 56px; scroll-margin-top: 60px; }
+    .section-title {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #D4276A;
+    }
+    .section-icon {
+      background: #1a1b4b; color: #fff;
+      width: 42px; height: 42px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; flex-shrink: 0;
+    }
+    .section-title h2 { font-size: 1.35rem; color: #1a1b4b; }
+    .section-title .subtitle { font-size: .85rem; color: #888; }
+
+    .card { background: #fff; border-radius: 12px; padding: 24px 28px; box-shadow: 0 2px 8px rgba(0,0,0,.07); margin-bottom: 20px; }
+    .card h3 { color: #1a1b4b; font-size: 1.05rem; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid #eee; }
+
+    .steps-list { counter-reset: s; list-style: none; }
+    .steps-list li { counter-increment: s; display: flex; gap: 12px; margin-bottom: 14px; align-items: flex-start; }
+    .steps-list li::before {
+      content: counter(s);
+      background: #1a1b4b; color: #fff;
+      width: 24px; height: 24px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .78rem; font-weight: 700; flex-shrink: 0; margin-top: 3px;
+    }
+    .steps-list li span { font-size: .97rem; }
+    .steps-list li strong { color: #1a1b4b; }
+
+    .tip { background: #f0f4ff; border: 1px solid #c7d4ff; border-radius: 8px; padding: 12px 16px; margin-top: 14px; font-size: .92rem; color: #1a1b4b; }
+    .tip strong { color: #D4276A; }
+    .warn { background: #fff5f0; border: 1px solid #ffc5a8; border-radius: 8px; padding: 12px 16px; margin-top: 14px; font-size: .92rem; color: #8b2000; }
+    .warn strong { color: #c0392b; }
+
+    code {
+      background: #1a1b4b; color: #a8f0c6;
+      padding: 2px 8px; border-radius: 5px; font-size: .88rem;
+      font-family: 'Courier New', monospace;
+    }
+    pre {
+      background: #1a1b4b; color: #a8f0c6;
+      border-radius: 10px; padding: 18px 22px;
+      font-size: .88rem; font-family: 'Courier New', monospace;
+      overflow-x: auto; margin: 14px 0; line-height: 1.8;
+    }
+    pre .comment { color: #6a9f78; }
+
+    .links-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .link-card {
+      border: 2px solid #e8eaf6; border-radius: 10px; padding: 16px 18px;
+      text-decoration: none; color: inherit; transition: border-color .2s;
+      display: block;
+    }
+    .link-card:hover { border-color: #D4276A; }
+    .link-card h4 { color: #1a1b4b; margin-bottom: 4px; font-size: .95rem; }
+    .link-card p { font-size: .82rem; color: #666; }
+    .link-card .url { font-size: .78rem; color: #D4276A; margin-top: 6px; word-break: break-all; }
+
+    .admin-badge { background: #D4276A; color: #fff; font-size: .72rem; padding: 2px 8px; border-radius: 10px; font-weight: 700; margin-left: 8px; vertical-align: middle; }
+    .user-badge { background: #1a1b4b; color: #fff; font-size: .72rem; padding: 2px 8px; border-radius: 10px; font-weight: 700; margin-left: 8px; vertical-align: middle; }
+
+    table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    th { background: #1a1b4b; color: #fff; padding: 10px 14px; text-align: left; }
+    td { padding: 10px 14px; border-bottom: 1px solid #eee; }
+    tr:hover td { background: #f8f9ff; }
+
+    .toc { background: #fff; border-radius: 12px; padding: 24px 28px; box-shadow: 0 2px 8px rgba(0,0,0,.07); margin-bottom: 40px; }
+    .toc h3 { color: #1a1b4b; margin-bottom: 14px; font-size: 1rem; }
+    .toc ul { list-style: none; }
+    .toc ul li { margin-bottom: 8px; }
+    .toc ul li a { color: #D4276A; text-decoration: none; font-size: .95rem; }
+    .toc ul li a:hover { text-decoration: underline; }
+    .toc ul li .toc-label { font-size: .78rem; color: #888; margin-left: 8px; }
+
+    footer { text-align: center; padding: 28px; font-size: .83rem; color: #888; background: #fff; border-top: 1px solid #eee; margin-top: 40px; }
+
+    @media (max-width: 600px) {
+      .links-grid { grid-template-columns: 1fr; }
+      nav a { padding: 12px 14px; font-size: .82rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Odon<span>Concursos</span></div>
+  <h1>Manual Interno — Rankings de Provas</h1>
+  <p>Guia completo para a equipe: uso como aluno e como administrador</p>
+  <div class="badge">🔒 USO INTERNO — NÃO COMPARTILHAR PUBLICAMENTE</div>
+</header>
+
+<nav id="nav">
+  <a href="#visao-geral">Visão Geral</a>
+  <a href="#como-usuario">Como Usuário</a>
+  <a href="#como-admin">Como Admin</a>
+  <a href="#manutencao">Manutenção</a>
+  <a href="#solucao-problemas">Problemas</a>
+  <a href="#links">Links Úteis</a>
+</nav>
+
+<div class="container">
+
+  <!-- ÍNDICE -->
+  <div class="toc">
+    <h3>📋 Índice</h3>
+    <ul>
+      <li><a href="#visao-geral">1. Visão Geral do Sistema</a></li>
+      <li><a href="#como-usuario">2. Guia do Usuário Comum</a> <span class="toc-label">qualquer pessoa</span></li>
+      <li><a href="#como-admin">3. Guia do Administrador</a> <span class="toc-label">equipe Odon</span></li>
+      <li><a href="#manutencao">4. Manutenção e Atualizações</a> <span class="toc-label">técnico</span></li>
+      <li><a href="#solucao-problemas">5. Solução de Problemas</a></li>
+      <li><a href="#links">6. Links e Acessos Importantes</a></li>
+    </ul>
+  </div>
+
+  <!-- 1. VISÃO GERAL -->
+  <div class="section" id="visao-geral">
+    <div class="section-title">
+      <div class="section-icon">🗺️</div>
+      <div>
+        <h2>1. Visão Geral do Sistema</h2>
+        <div class="subtitle">O que é e como funciona</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>O que é o Rankings OdonConcursos</h3>
+      <p style="margin-bottom:12px;">Site onde candidatos a concursos odontológicos enviam suas notas e se comparam com outros participantes. Funciona como um gabarito coletivo voluntário.</p>
+      <p><strong>URL pública:</strong> <a href="https://odonconcursos.github.io/odon-rankings/" target="_blank" style="color:#D4276A;">https://odonconcursos.github.io/odon-rankings/</a></p>
+    </div>
+
+    <div class="card">
+      <h3>Tecnologias usadas</h3>
+      <table>
+        <tr><th>Componente</th><th>Tecnologia</th><th>Função</th></tr>
+        <tr><td>Site</td><td>HTML/CSS/JS puro</td><td>Interface visual — hospedado no GitHub Pages</td></tr>
+        <tr><td>Banco de dados</td><td>Firebase Firestore</td><td>Armazena provas, notas e usuários</td></tr>
+        <tr><td>Login</td><td>Firebase Authentication</td><td>Gerencia contas (email/senha e Google)</td></tr>
+        <tr><td>Upload de arquivos</td><td>Cloudinary</td><td>Armazena PDFs e imagens de provas</td></tr>
+        <tr><td>Hospedagem</td><td>GitHub Pages</td><td>Serve o site gratuitamente</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Admins do sistema</h3>
+      <table>
+        <tr><th>E-mail</th><th>Acesso</th></tr>
+        <tr><td>michelecostaor@gmail.com</td><td>Admin completo</td></tr>
+        <tr><td>adm.odonconcursos@gmail.com</td><td>Admin completo</td></tr>
+        <tr><td>odonconcursosvendas@gmail.com</td><td>Admin completo</td></tr>
+      </table>
+      <div class="tip" style="margin-top:14px;"><strong>💡</strong> Qualquer outro e-mail tem acesso apenas como usuário comum.</div>
+    </div>
+  </div>
+
+  <!-- 2. GUIA DO USUÁRIO -->
+  <div class="section" id="como-usuario">
+    <div class="section-title">
+      <div class="section-icon">👤</div>
+      <div>
+        <h2>2. Guia do Usuário Comum <span class="user-badge">USUÁRIO</span></h2>
+        <div class="subtitle">O que qualquer pessoa pode fazer no site</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Criar conta</h3>
+      <ul class="steps-list">
+        <li><span>Acessar o site e clicar em <strong>"Criar conta"</strong> no menu superior direito.</span></li>
+        <li><span>Escolher entre <strong>e-mail + senha</strong> ou <strong>Continuar com Google</strong>.</span></li>
+        <li><span>Preencher nome, e-mail e senha (mínimo 6 caracteres) se optar por e-mail.</span></li>
+        <li><span>Após cadastro, o login é feito automaticamente e o usuário já está dentro do site.</span></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Fazer login</h3>
+      <ul class="steps-list">
+        <li><span>Clicar em <strong>"Entrar"</strong> no canto superior direito.</span></li>
+        <li><span>Digitar e-mail e senha, ou clicar em <strong>"Continuar com Google"</strong>.</span></li>
+        <li><span>Após login, o avatar com as iniciais aparece no canto superior — confirma que está logado.</span></li>
+      </ul>
+      <div class="tip"><strong>Senha esquecida:</strong> Clicar em "Esqueci minha senha" na tela de login → recebe e-mail de redefinição.</div>
+    </div>
+
+    <div class="card">
+      <h3>Navegar no site</h3>
+      <p style="margin-bottom:12px;">O menu superior está presente em <strong>todas as páginas</strong> do site e contém:</p>
+      <ul class="steps-list">
+        <li><span><strong>Como usar</strong> — abre o tutorial público com o passo a passo para candidatos (tutorial-usuario.html).</span></li>
+        <li><span><strong>Entrar / Criar conta</strong> — visível para quem não está logado.</span></li>
+        <li><span><strong>Meu histórico / Painel Admin</strong> — visível apenas para logados (Painel Admin só para admins).</span></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Ver rankings existentes</h3>
+      <ul class="steps-list">
+        <li><span>Na página inicial, todos os rankings aparecem como cards com nome da prova, banca e data.</span></li>
+        <li><span>Usar a <strong>barra de busca</strong> ou o <strong>filtro de bancas</strong> para encontrar uma prova específica.</span></li>
+        <li><span>Clicar no card para abrir o ranking completo com tabela de candidatos e notas.</span></li>
+      </ul>
+      <div class="tip"><strong>💡</strong> Não precisa de conta para visualizar rankings. Qualquer pessoa pode ver.</div>
+    </div>
+
+    <div class="card">
+      <h3>Criar um novo ranking</h3>
+      <ul class="steps-list">
+        <li><span>Na página inicial, clicar em <strong>"+ Criar novo ranking"</strong>.</span></li>
+        <li><span>Preencher: <strong>Nome da prova/cargo</strong>, <strong>Banca organizadora</strong> e <strong>Data da prova</strong>.</span></li>
+        <li><span>Clicar em <strong>"Criar ranking"</strong> — o site redireciona para o ranking criado (vazio).</span></li>
+      </ul>
+      <div class="tip"><strong>💡</strong> Qualquer pessoa pode criar um ranking — não precisa de conta.</div>
+    </div>
+
+    <div class="card">
+      <h3>Enviar nota em um ranking</h3>
+      <ul class="steps-list">
+        <li><span>Abrir o ranking da prova desejada e clicar em <strong>"Enviar minha nota"</strong>.</span></li>
+        <li><span>Preencher o <strong>nome de exibição</strong> (pode marcar "apenas minhas iniciais" para privacidade).</span></li>
+        <li><span>Digitar a <strong>nota total</strong> (obrigatório) e acertos por disciplina (opcional).</span></li>
+        <li><span>Anexar o PDF ou imagem da prova via campo <strong>"Enviar prova"</strong> (opcional).</span></li>
+        <li><span>Marcar a opção <strong>"Sou aluno(a) OdonConcursos"</strong> se for aluno(a) — aparece o badge <strong>🎓 Aluno(a) Odon</strong> no ranking.</span></li>
+        <li><span>Clicar em <strong>"Enviar nota"</strong> — ranking atualiza na hora com a nova posição.</span></li>
+      </ul>
+      <div class="tip"><strong>💡 Badge Aluno(a) Odon:</strong> O campo <code>alunoOdon: true/false</code> fica salvo no Firestore junto com a nota. O badge rosa aparece ao lado do nome no ranking para facilitar a identificação dos alunos da OdonConcursos.</div>
+    </div>
+
+    <div class="card">
+      <h3>Editar nota já enviada</h3>
+      <ul class="steps-list">
+        <li><span>Abrir o ranking da prova onde enviou a nota.</span></li>
+        <li><span>Clicar no botão <strong>"Editar minha nota"</strong> (visível apenas para quem enviou).</span></li>
+        <li><span>Alterar os campos desejados e clicar em <strong>"Salvar alterações"</strong>.</span></li>
+      </ul>
+      <div class="warn"><strong>⚠️ Atenção:</strong> Usuários sem conta só conseguem editar no mesmo navegador/dispositivo. Se trocar de dispositivo, perdem o acesso à edição (a nota permanece no ranking, mas não podem mais alterar).</div>
+    </div>
+
+    <div class="card">
+      <h3>Ver histórico pessoal</h3>
+      <ul class="steps-list">
+        <li><span>Clicar em <strong>"Meu histórico"</strong> no menu superior (só aparece para logados).</span></li>
+        <li><span>Ver resumo geral: provas participadas, melhor posição, maior nota, média.</span></li>
+        <li><span>Lista de todas as provas com posição e nota em cada uma.</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 3. GUIA DO ADMIN -->
+  <div class="section" id="como-admin">
+    <div class="section-title">
+      <div class="section-icon">🛡️</div>
+      <div>
+        <h2>3. Guia do Administrador <span class="admin-badge">ADMIN</span></h2>
+        <div class="subtitle">Exclusivo para a equipe OdonConcursos</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Acessar o Painel Administrativo</h3>
+      <ul class="steps-list">
+        <li><span>Fazer login com um dos e-mails admin (michelecostaor, adm.odonconcursos ou odonconcursosvendas).</span></li>
+        <li><span>Após o login, o botão <strong>"Painel Admin"</strong> aparece automaticamente no menu superior.</span></li>
+        <li><span>Clicar em <strong>"Painel Admin"</strong> para acessar a área restrita.</span></li>
+      </ul>
+      <div class="tip"><strong>💡</strong> Se o botão "Painel Admin" não aparecer, você pode não estar logado com o e-mail correto. Verifique o avatar no canto superior direito.</div>
+    </div>
+
+    <div class="card">
+      <h3>Aba "Provas Enviadas" — Gerenciar arquivos dos alunos</h3>
+      <ul class="steps-list">
+        <li><span>No Painel Admin, clicar na aba <strong>"Provas enviadas"</strong>.</span></li>
+        <li><span>Use o <strong>filtro por prova</strong> para ver apenas os arquivos de uma prova específica.</span></li>
+        <li><span>Para cada arquivo enviado você verá: nome do arquivo, prova, quem enviou e data.</span></li>
+        <li><span>Clicar em <strong>"Baixar"</strong> para fazer download do arquivo e verificar a prova do aluno.</span></li>
+        <li><span>Clicar em <strong>"Excluir"</strong> para remover o arquivo do sistema (pede confirmação).</span></li>
+      </ul>
+      <div class="warn"><strong>⚠️</strong> A exclusão de arquivos é irreversível. Baixe o arquivo antes de excluir se precisar guardar uma cópia.</div>
+    </div>
+
+    <div class="card">
+      <h3>Aba "Rankings" — Gerenciar provas e notas</h3>
+      <ul class="steps-list">
+        <li><span>No Painel Admin, clicar na aba <strong>"Rankings"</strong>.</span></li>
+        <li><span>Ver a lista de todas as provas cadastradas com número de participantes.</span></li>
+        <li><span>Clicar em <strong>"Ver ranking"</strong> para abrir o ranking completo de cada prova.</span></li>
+        <li><span>No ranking de uma prova, admins têm o botão <strong>"Excluir"</strong> em cada nota para removê-la se necessário.</span></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Adicionar novo e-mail admin</h3>
+      <ul class="steps-list">
+        <li><span>Abrir o arquivo <code>js/firebase-config.js</code> na pasta do projeto.</span></li>
+        <li><span>Localizar o array <code>ADMIN_EMAILS</code> e adicionar o novo e-mail:</span></li>
+      </ul>
+      <pre><span class="comment">// Antes:</span>
+const ADMIN_EMAILS = [
+  "michelecostaor@gmail.com",
+  "adm.odonconcursos@gmail.com",
+  "odonconcursosvendas@gmail.com"
+];
+
+<span class="comment">// Depois (adicionando novo):</span>
+const ADMIN_EMAILS = [
+  "michelecostaor@gmail.com",
+  "adm.odonconcursos@gmail.com",
+  "odonconcursosvendas@gmail.com",
+  "novoemail@gmail.com"
+];</pre>
+      <ul class="steps-list" style="margin-top:12px;">
+        <li><span>Fazer a mesma adição no arquivo <code>rules/firestore.rules</code> dentro da função <code>ehAdmin()</code>.</span></li>
+        <li><span>Salvar os dois arquivos e fazer o <a href="#manutencao" style="color:#D4276A;">git push</a>.</span></li>
+        <li><span>Republicar as regras no <strong>Firebase Console → Firestore → Rules</strong> com o novo conteúdo do arquivo.</span></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Remover uma prova (ranking) do sistema</h3>
+      <ul class="steps-list">
+        <li><span>Acessar <a href="https://console.firebase.google.com/project/odonrankings/firestore" target="_blank" style="color:#D4276A;">Firebase Console → Firestore</a>.</span></li>
+        <li><span>Entrar na coleção <strong>provas</strong> e localizar o documento da prova a ser removida.</span></li>
+        <li><span>Dentro do documento, excluir a sub-coleção <strong>notas</strong> primeiro (se houver).</span></li>
+        <li><span>Em seguida, excluir o documento da prova.</span></li>
+      </ul>
+      <div class="warn"><strong>⚠️</strong> Não há como desfazer a exclusão de dados no Firestore. Tenha certeza antes de excluir.</div>
+    </div>
+  </div>
+
+  <!-- 4. MANUTENÇÃO -->
+  <div class="section" id="manutencao">
+    <div class="section-title">
+      <div class="section-icon">🔧</div>
+      <div>
+        <h2>4. Manutenção e Atualizações</h2>
+        <div class="subtitle">Como atualizar o site e gerenciar o sistema</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Como atualizar o site (qualquer arquivo)</h3>
+      <p style="margin-bottom:12px;">Toda atualização segue o mesmo fluxo: editar o arquivo → salvar → enviar para o GitHub.</p>
+      <ul class="steps-list">
+        <li><span>Editar o arquivo desejado na pasta do projeto no computador.</span></li>
+        <li><span>Abrir o <strong>Git Bash</strong> na pasta do projeto.</span></li>
+        <li><span>Rodar os comandos abaixo:</span></li>
+      </ul>
+      <pre>cd "C:/Users/chell/OneDrive/Área de Trabalho/ODONCONCURSOS/RANKING ODON ALUNOS"
+git add .
+git commit -m "descrição clara do que foi alterado"
+git push</pre>
+      <ul class="steps-list" style="margin-top:12px;">
+        <li><span>Aguardar ~1 minuto. O GitHub Pages atualiza automaticamente.</span></li>
+      </ul>
+      <div class="tip"><strong>Dica:</strong> Use mensagens de commit descritivas. Ex: "Adiciona ranking da prova CFO 2026" em vez de só "update".</div>
+    </div>
+
+    <div class="card">
+      <h3>Quando precisa republicar as Firestore Rules</h3>
+      <p style="margin-bottom:12px;">As regras do Firestore <strong>não sobem automaticamente</strong> com o git push — precisam ser republicadas manualmente sempre que o arquivo <code>rules/firestore.rules</code> for alterado.</p>
+      <ul class="steps-list">
+        <li><span>Acessar: <a href="https://console.firebase.google.com/project/odonrankings/firestore/rules" target="_blank" style="color:#D4276A;">Firebase Console → Firestore → Rules</a></span></li>
+        <li><span>Apagar todo o conteúdo atual do editor.</span></li>
+        <li><span>Copiar e colar o conteúdo atualizado do arquivo <code>rules/firestore.rules</code>.</span></li>
+        <li><span>Clicar em <strong>"Publicar"</strong>.</span></li>
+      </ul>
+      <div class="tip"><strong>Quando isso é necessário?</strong> Só ao alterar as regras de acesso — por exemplo, ao adicionar/remover e-mails admin na função <code>ehAdmin()</code>.</div>
+    </div>
+
+    <div class="card">
+      <h3>Gerenciar usuários (Firebase Authentication)</h3>
+      <ul class="steps-list">
+        <li><span>Acessar: <a href="https://console.firebase.google.com/project/odonrankings/authentication/users" target="_blank" style="color:#D4276A;">Firebase Console → Authentication → Usuários</a></span></li>
+        <li><span>Ver todos os usuários cadastrados com e-mail, data de cadastro e último acesso.</span></li>
+        <li><span>Para <strong>desativar</strong> um usuário: clicar nos 3 pontos → "Desativar conta".</span></li>
+        <li><span>Para <strong>excluir</strong> um usuário: clicar nos 3 pontos → "Excluir conta".</span></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Backup dos arquivos</h3>
+      <p>Uma cópia de todos os arquivos do projeto foi salva na pasta <code>BACKUP/</code> dentro da pasta de trabalho em <strong>29/04/2026</strong>. Se algum arquivo for corrompido ou deletado por engano, pode ser restaurado a partir dessa pasta.</p>
+      <div class="tip"><strong>Recomendação:</strong> Sempre que fizer mudanças significativas no projeto, fazer uma nova cópia manual dos arquivos alterados para a pasta BACKUP.</div>
+    </div>
+  </div>
+
+  <!-- 5. SOLUÇÃO DE PROBLEMAS -->
+  <div class="section" id="solucao-problemas">
+    <div class="section-title">
+      <div class="section-icon">🚨</div>
+      <div>
+        <h2>5. Solução de Problemas</h2>
+        <div class="subtitle">Erros comuns e como resolver</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Problema: Site não atualiza após o git push</h3>
+      <ul class="steps-list">
+        <li><span>Aguardar mais 1-2 minutos — o GitHub Pages pode demorar um pouco.</span></li>
+        <li><span>Fazer um <strong>hard refresh</strong> no browser: <code>Ctrl + Shift + R</code> (Windows) ou <code>Cmd + Shift + R</code> (Mac).</span></li>
+        <li><span>Verificar em <a href="https://github.com/OdonConcursos/odon-rankings/actions" target="_blank" style="color:#D4276A;">GitHub Actions</a> se o deploy foi concluído (deve aparecer com ✅).</span></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Problema: Erro "Permission denied" ou dados não carregam</h3>
+      <ul class="steps-list">
+        <li><span>Verificar se as regras do Firestore estão publicadas corretamente.</span></li>
+        <li><span>Acessar <a href="https://console.firebase.google.com/project/odonrankings/firestore/rules" target="_blank" style="color:#D4276A;">Firebase Console → Firestore → Rules</a> e republicar.</span></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Problema: Botão "Painel Admin" não aparece para um admin</h3>
+      <ul class="steps-list">
+        <li><span>Confirmar que o e-mail do usuário está exatamente como no array <code>ADMIN_EMAILS</code> no <code>firebase-config.js</code>.</span></li>
+        <li><span>Confirmar que o e-mail também está no <code>firestore.rules</code>.</span></li>
+        <li><span>Fazer logout e login novamente.</span></li>
+        <li><span>Se ainda não funcionar, verificar se o git push foi feito e se o GitHub Pages atualizou.</span></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Problema: Erro no git push ("index.lock" ou "HEAD.lock")</h3>
+      <ul class="steps-list">
+        <li><span>No Git Bash, rodar: <code>rm -f .git/index.lock .git/HEAD.lock</code></span></li>
+        <li><span>Tentar o push novamente.</span></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Problema: Upload de arquivo não funciona</h3>
+      <ul class="steps-list">
+        <li><span>Verificar se o arquivo tem no máximo <strong>10MB</strong>.</span></li>
+        <li><span>Formatos aceitos: <strong>PDF, JPG, PNG</strong>.</span></li>
+        <li><span>Verificar as configurações do Cloudinary no <a href="https://cloudinary.com" target="_blank" style="color:#D4276A;">painel Cloudinary</a> (upload preset <code>odon-rankings-uploads</code> deve estar ativo).</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 6. LINKS -->
+  <div class="section" id="links">
+    <div class="section-title">
+      <div class="section-icon">🔗</div>
+      <div>
+        <h2>6. Links e Acessos Importantes</h2>
+        <div class="subtitle">Todos os painéis e recursos do sistema</div>
+      </div>
+    </div>
+
+    <div class="links-grid">
+      <a class="link-card" href="https://odonconcursos.github.io/odon-rankings/" target="_blank">
+        <h4>🌐 Site do Rankings</h4>
+        <p>URL pública que os alunos acessam</p>
+        <div class="url">odonconcursos.github.io/odon-rankings/</div>
+      </a>
+      <a class="link-card" href="https://github.com/OdonConcursos/odon-rankings" target="_blank">
+        <h4>📁 Repositório GitHub</h4>
+        <p>Código-fonte e histórico de versões</p>
+        <div class="url">github.com/OdonConcursos/odon-rankings</div>
+      </a>
+      <a class="link-card" href="https://console.firebase.google.com/project/odonrankings" target="_blank">
+        <h4>🔥 Firebase Console</h4>
+        <p>Banco de dados, autenticação e regras</p>
+        <div class="url">console.firebase.google.com/project/odonrankings</div>
+      </a>
+      <a class="link-card" href="https://console.firebase.google.com/project/odonrankings/authentication/users" target="_blank">
+        <h4>👥 Usuários (Auth)</h4>
+        <p>Gerenciar contas cadastradas</p>
+        <div class="url">Firebase → Authentication → Usuários</div>
+      </a>
+      <a class="link-card" href="https://console.firebase.google.com/project/odonrankings/firestore" target="_blank">
+        <h4>🗄️ Firestore Database</h4>
+        <p>Ver e editar dados (provas e notas)</p>
+        <div class="url">Firebase → Firestore Database</div>
+      </a>
+      <a class="link-card" href="https://console.firebase.google.com/project/odonrankings/firestore/rules" target="_blank">
+        <h4>🔒 Regras do Firestore</h4>
+        <p>Publicar regras de segurança</p>
+        <div class="url">Firebase → Firestore → Rules</div>
+      </a>
+      <a class="link-card" href="https://cloudinary.com" target="_blank">
+        <h4>☁️ Cloudinary</h4>
+        <p>Ver arquivos enviados pelos alunos</p>
+        <div class="url">cloudinary.com (conta: ducokydym)</div>
+      </a>
+      <a class="link-card" href="https://github.com/OdonConcursos/odon-rankings/actions" target="_blank">
+        <h4>⚙️ GitHub Actions</h4>
+        <p>Verificar status dos deploys</p>
+        <div class="url">github.com → Actions</div>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  OdonConcursos — Manual Interno do Rankings &copy; 2026 &nbsp;|&nbsp;
+  Documento de uso exclusivo da equipe. Atualizado em 29/04/2026.
+</footer>
+
+<script>
+  // Highlight active nav item on scroll
+  const sections = document.querySelectorAll('.section');
+  const navLinks = document.querySelectorAll('nav a');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 80) current = s.id;
+    });
+    navLinks.forEach(a => {
+      a.classList.remove('active');
+      if (a.getAttribute('href') === '#' + current) a.classList.add('active');
+    });
+  });
+</script>
+
+</body>
+</html>

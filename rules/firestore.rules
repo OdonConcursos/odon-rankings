@@ -38,9 +38,16 @@ service cloud.firestore {
       allow create: if true; // qualquer pessoa pode criar um ranking novo
 
       // Atualização de totalParticipantes: apenas pelo próprio sistema (campo específico)
+      // Atualização de totalInscritos: qualquer usuário autenticado pode sugerir (não pode marcar como verificado)
       allow update: if ehAdmin() ||
         (request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['totalParticipantes']));
+          .hasOnly(['totalParticipantes'])) ||
+        (
+          estaAutenticado() &&
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['totalInscritos', 'totalInscritosVerificado']) &&
+          request.resource.data.totalInscritosVerificado == false
+        );
 
       allow delete: if ehAdmin();
 
@@ -76,6 +83,16 @@ service cloud.firestore {
 
         allow delete: if ehAdmin();
       }
+    }
+
+    // =============================================
+    // COLEÇÃO: usuarios
+    // Cada usuário pode ler/escrever seu próprio perfil.
+    // Admins podem ler todos os perfis (para seção de Leads).
+    // =============================================
+    match /usuarios/{uid} {
+      allow read, write: if estaAutenticado() && request.auth.uid == uid;
+      allow read: if ehAdmin();
     }
 
     // =============================================

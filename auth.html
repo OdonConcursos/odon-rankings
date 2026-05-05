@@ -111,6 +111,11 @@
 <div class="auth-wrapper">
   <div class="auth-card">
 
+    <!-- Mensagem contextual (ex: vindo do submit.html) -->
+    <div id="msg-contexto" style="display:none; background: linear-gradient(135deg,#e8f4fd,#d6eaf8); border:1.5px solid #5dade2; border-radius:8px; padding:14px 16px; margin-bottom:16px; font-size:14px; color:#1a5276; text-align:center; line-height:1.5;">
+      📝 Para enviar sua nota, faça login ou crie uma conta gratuita.
+    </div>
+
     <!-- Logo -->
     <div class="auth-logo">
       <h1>OdonConcursos</h1>
@@ -251,7 +256,21 @@
     btns.forEach(b => { b.disabled = true; b.style.opacity = '0.7'; });
 
     try {
-      await auth.signInWithPopup(provider);
+      const result = await auth.signInWithPopup(provider);
+      // Salva perfil no Firestore se for novo usuário
+      try {
+        const docRef = db.collection('usuarios').doc(result.user.uid);
+        const snap = await docRef.get();
+        if (!snap.exists) {
+          await docRef.set({
+            nome:     result.user.displayName || '',
+            email:    result.user.email || '',
+            uid:      result.user.uid,
+            criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        }
+      } catch(e) { console.warn('Perfil não salvo:', e); }
+
       showToast('Login realizado com sucesso!', 'success');
       const redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
       setTimeout(() => window.location.href = redirect, 800);
@@ -318,6 +337,23 @@
 
     try {
       await auth.signInWithEmailAndPassword(email, senha);
+      // Garante que o perfil existe no Firestore (retrocompatível com usuários antigos)
+      try {
+        const userLogin = auth.currentUser;
+        if (userLogin) {
+          const docRef = db.collection('usuarios').doc(userLogin.uid);
+          const snap = await docRef.get();
+          if (!snap.exists) {
+            await docRef.set({
+              nome:     userLogin.displayName || userLogin.email,
+              email:    userLogin.email,
+              uid:      userLogin.uid,
+              criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+            });
+          }
+        }
+      } catch(e) { console.warn('Perfil não salvo:', e); }
+
       showToast('Login realizado com sucesso!', 'success');
       const redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
       setTimeout(() => window.location.href = redirect, 800);
@@ -360,6 +396,16 @@
     try {
       const cred = await auth.createUserWithEmailAndPassword(email, senha);
       await cred.user.updateProfile({ displayName: nome });
+      // Salva perfil do novo usuário no Firestore
+      try {
+        await db.collection('usuarios').doc(cred.user.uid).set({
+          nome,
+          email,
+          uid:      cred.user.uid,
+          criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      } catch(e) { console.warn('Perfil não salvo:', e); }
+
       showToast('Conta criada com sucesso! Bem-vindo(a)!', 'success');
       const redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
       setTimeout(() => window.location.href = redirect, 900);
@@ -416,6 +462,11 @@
       window.location.href = redirect;
     }
   });
+
+  // Mensagem contextual (ex: vindo do submit.html)
+  if (new URLSearchParams(window.location.search).get('motivo') === 'enviar-nota') {
+    document.getElementById('msg-contexto').style.display = 'block';
+  }
 
   // Aba inicial
   mostrarAba(tabParam === 'cadastro' ? 'cadastro' : 'login');

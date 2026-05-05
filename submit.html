@@ -19,20 +19,6 @@
     .toast-error   { background: #dc3545; }
     .toast-info    { background: #1a1b4b; }
 
-    .incentivo-login {
-      background: linear-gradient(135deg, #fff9e6, #fff3cc);
-      border: 1.5px solid #ffc107;
-      border-radius: 10px;
-      padding: 16px 20px;
-      margin-bottom: 24px;
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-    }
-    .incentivo-login .icone { font-size: 28px; }
-    .incentivo-login h4 { font-size: 15px; color: #856404; margin-bottom: 4px; }
-    .incentivo-login p  { font-size: 13px; color: #856404; }
-    .incentivo-login a  { color: var(--pink); font-weight: bold; text-decoration: none; }
   </style>
 </head>
 <body>
@@ -76,19 +62,6 @@
   </div>
 
   <div id="form-wrapper" style="display:none;">
-
-    <!-- Incentivo login (só para não logados) -->
-    <div class="incentivo-login" id="incentivo-login" style="display:none;">
-      <div class="icone">💡</div>
-      <div>
-        <h4>Acompanhe seu desempenho ao longo do tempo!</h4>
-        <p>
-          Você pode enviar sua nota sem criar conta, mas se quiser ver seu histórico de provas e evolução,
-          <a href="auth.html?tab=cadastro">crie uma conta grátis</a> ou
-          <a href="auth.html">faça login</a>. É rápido!
-        </p>
-      </div>
-    </div>
 
     <div class="form-card">
       <h2 id="form-titulo">📝 Enviar minha nota</h2>
@@ -473,11 +446,6 @@
         if (nome) document.getElementById('campo-nome').value = nome;
       }
 
-      // Mostra incentivo se não logado
-      if (!currentUser) {
-        document.getElementById('incentivo-login').style.display = 'flex';
-      }
-
       document.getElementById('loading-form').style.display = 'none';
       document.getElementById('form-wrapper').style.display = 'block';
 
@@ -493,7 +461,12 @@
     }
   }
 
-  auth.onAuthStateChanged(() => {
+  auth.onAuthStateChanged((user) => {
+    if (!user) {
+      const returnUrl = encodeURIComponent(`submit.html?provaId=${provaId}${notaId ? '&notaId=' + notaId : ''}`);
+      window.location.href = `auth.html?redirect=${returnUrl}&motivo=enviar-nota`;
+      return;
+    }
     inicializar();
   });
 </script>

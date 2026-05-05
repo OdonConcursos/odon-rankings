@@ -88,6 +88,65 @@
       font-weight: bold;
       color: var(--pink);
     }
+
+    .estimativa-posicao {
+      background: linear-gradient(135deg, #f0fff4, #d4edda);
+      border: 1.5px solid #28a745;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .estimativa-posicao .est-num {
+      font-size: 30px;
+      font-weight: bold;
+      color: #28a745;
+      min-width: 70px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .estimativa-posicao .est-info h4 {
+      font-size: 15px;
+      color: #155724;
+      margin-bottom: 4px;
+    }
+    .estimativa-posicao .est-info p {
+      font-size: 13px;
+      color: #155724;
+    }
+    .estimativa-posicao .est-info .aviso {
+      font-size: 12px;
+      color: #856404;
+      margin-top: 4px;
+    }
+
+    .badge-verificado {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 10px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    .badge-verificado.sim { background: #d4edda; color: #155724; }
+    .badge-verificado.nao { background: #fff3cd; color: #856404; }
+
+    .inscritos-box {
+      background: var(--branco);
+      border: 1px solid var(--cinza-medio);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: var(--cinza-texto);
+    }
   </style>
 </head>
 <body>
@@ -168,6 +227,29 @@
     </div>
   </div>
 
+  <!-- Posição estimada no concurso real -->
+  <div id="estimativa-posicao" class="estimativa-posicao" style="display:none;">
+    <div class="est-num" id="est-pos-num">—</div>
+    <div class="est-info">
+      <h4>
+        Posição estimada no concurso real
+        <span class="badge-verificado" id="badge-inscritos-status"></span>
+      </h4>
+      <p id="est-pos-desc"></p>
+      <p class="aviso" id="est-pos-aviso"></p>
+    </div>
+  </div>
+
+  <!-- Box de inscritos -->
+  <div id="inscritos-box" class="inscritos-box" style="display:none;">
+    <span>📊</span>
+    <span id="inscritos-label"></span>
+    <button id="btn-sugerir-inscritos" class="btn btn-outline btn-sm"
+      onclick="abrirModalInscritos()" style="font-size:12px;margin-left:auto;">
+      Sugerir inscritos
+    </button>
+  </div>
+
   <!-- Tabela de ranking -->
   <div id="tabela-container" class="table-container" style="display:none;">
     <table>
@@ -192,6 +274,25 @@
     <button class="btn btn-pink" onclick="irEnviarNota()">📝 Enviar minha nota</button>
   </div>
 
+</div>
+
+<!-- Modal: sugerir inscritos -->
+<div class="modal-overlay" id="modal-inscritos">
+  <div class="modal">
+    <h3>📊 Sugerir número de inscritos</h3>
+    <p style="font-size:13px;color:var(--cinza-texto);margin-bottom:16px;">
+      Quantas pessoas estavam inscritas nesta prova? O valor ficará como "não verificado" até a equipe OdonConcursos confirmar.
+    </p>
+    <div class="form-group">
+      <label>Total de inscritos</label>
+      <input type="number" class="form-control" id="input-inscritos"
+        placeholder="Ex: 5000" min="1" max="9999999" style="max-width:200px;">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="fecharModalInscritos()">Cancelar</button>
+      <button class="btn btn-pink" onclick="salvarSugestaoInscritos()">Enviar sugestão</button>
+    </div>
+  </div>
 </div>
 
 <div id="toast" class="toast"></div>
@@ -267,7 +368,37 @@
         document.getElementById('minha-pos-desc').textContent =
           `Você está em ${minhaPosicao}º lugar de ${notas.length} participante${notas.length !== 1 ? 's' : ''}`;
         document.getElementById('minha-posicao-banner').style.display = 'flex';
+
+        // Posição estimada no concurso real (se inscritos informados)
+        if (provaData.totalInscritos) {
+          const posEstimada = Math.round((minhaPosicao / notas.length) * provaData.totalInscritos);
+          document.getElementById('est-pos-num').textContent = `~${posEstimada.toLocaleString('pt-BR')}º`;
+          document.getElementById('est-pos-desc').textContent =
+            `Estimativa: em torno do ${posEstimada.toLocaleString('pt-BR')}º lugar de ${provaData.totalInscritos.toLocaleString('pt-BR')} inscritos`;
+          document.getElementById('est-pos-aviso').textContent =
+            `Cálculo baseado em ${notas.length} envio${notas.length !== 1 ? 's' : ''} no ranking. Quanto maior a amostra, mais precisa a estimativa.`;
+          const statusBadge = document.getElementById('badge-inscritos-status');
+          statusBadge.textContent   = provaData.totalInscritosVerificado ? '✅ Verificado' : '⚠️ Não verificado';
+          statusBadge.className     = `badge-verificado ${provaData.totalInscritosVerificado ? 'sim' : 'nao'}`;
+          document.getElementById('estimativa-posicao').style.display = 'flex';
+        }
       }
+
+      // Box de inscritos
+      const inscritos = provaData.totalInscritos;
+      const inscritosBox   = document.getElementById('inscritos-box');
+      const inscritosLabel = document.getElementById('inscritos-label');
+      const btnSugerir     = document.getElementById('btn-sugerir-inscritos');
+
+      if (inscritos) {
+        const verificadoTxt = provaData.totalInscritosVerificado ? '(verificado)' : '(não verificado)';
+        inscritosLabel.textContent = `${inscritos.toLocaleString('pt-BR')} inscritos ${verificadoTxt}`;
+        btnSugerir.textContent = '✏️ Corrigir inscritos';
+      } else {
+        inscritosLabel.textContent = 'Número de inscritos não informado.';
+        btnSugerir.textContent = '📊 Sugerir inscritos';
+      }
+      inscritosBox.style.display = 'flex';
 
       // Renderiza tabela
       renderizarTabela(notas, uid, token);
@@ -346,6 +477,57 @@
       window.location.href = `submit.html?provaId=${provaId}&notaId=${minhaEntrada.id}`;
     }
   }
+
+  // Modal inscritos
+  function abrirModalInscritos() {
+    // Exige login para sugerir inscritos
+    if (!currentUser) {
+      const returnUrl = encodeURIComponent(window.location.href);
+      showToast('Faça login para sugerir o número de inscritos.', 'info');
+      setTimeout(() => window.location.href = `auth.html?redirect=${returnUrl}`, 1500);
+      return;
+    }
+    if (provaData && provaData.totalInscritos) {
+      document.getElementById('input-inscritos').value = provaData.totalInscritos;
+    } else {
+      document.getElementById('input-inscritos').value = '';
+    }
+    document.getElementById('modal-inscritos').classList.add('aberto');
+  }
+
+  function fecharModalInscritos() {
+    document.getElementById('modal-inscritos').classList.remove('aberto');
+  }
+
+  async function salvarSugestaoInscritos() {
+    const valor = parseInt(document.getElementById('input-inscritos').value);
+    if (!valor || valor < 1) {
+      showToast('Informe um número válido de inscritos.', 'error');
+      return;
+    }
+    const btn = document.querySelector('#modal-inscritos .btn-pink');
+    btn.textContent = 'Enviando...';
+    btn.disabled = true;
+    try {
+      await db.collection('provas').doc(provaId).update({
+        totalInscritos:           valor,
+        totalInscritosVerificado: false
+      });
+      showToast('Sugestão enviada! A equipe vai verificar o valor.', 'success');
+      fecharModalInscritos();
+      setTimeout(() => location.reload(), 1500);
+    } catch(e) {
+      console.error(e);
+      showToast('Erro ao enviar sugestão. Tente novamente.', 'error');
+    } finally {
+      btn.textContent = 'Enviar sugestão';
+      btn.disabled = false;
+    }
+  }
+
+  document.getElementById('modal-inscritos').addEventListener('click', function(e) {
+    if (e.target === this) fecharModalInscritos();
+  });
 
   async function fazerLogout() {
     if (confirm('Deseja sair da sua conta?')) {

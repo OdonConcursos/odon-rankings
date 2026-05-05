@@ -70,25 +70,10 @@ URL do site: **https://odonconcursos.github.io/odon-rankings/**
 
 ## O que ainda falta fazer ❌
 
-### PRIORIDADE 1 — Tarefas pendentes
+### PRIORIDADE 1 — Limpeza pós-testes (após apresentação aos gestores)
+- [ ] Deletar usuário de teste (`aluno.teste.odon@gmail.com`) no Firebase Console → Authentication
+- [ ] Deletar a prova de teste "Cirurgião-Dentista — CFMV 2026" e suas notas no Firebase Console → Firestore
 - [ ] Adicionar o link https://odonconcursos.github.io/odon-rankings/ no menu do Circle
-- ~~Deletar usuário de teste (`aluno.teste.odon@gmail.com`)~~ — CANCELADO: site já está em uso por usuários reais, não deletar nada do Firebase para não correr risco de perda de dados
-- ~~Deletar prova de teste "Cirurgião-Dentista — CFMV 2026"~~ — CANCELADO pelo mesmo motivo acima. O ranking de teste já foi deletado manualmente.
-
-### PRIORIDADE 2 — Melhorias implementadas em 05/05/2026 ✅
-
-- [x] **Cadastro obrigatório para enviar nota** — `submit.html` redireciona não-logados para `auth.html` com mensagem explicativa e retorno automático após login. Rankings continuam públicos. Envios anônimos existentes preservados.
-
-- [x] **Captação de leads no painel admin** — aba "Leads" no `admin.html` lista usuários da coleção `usuarios` (Firestore) que nunca marcaram "Sou aluno(a) Odon". Exibe nome, e-mail, data de cadastro e provas participadas. Botão "Exportar CSV". Perfis são salvos no Firestore automaticamente no cadastro/login.
-
-- [x] **Posição estimada no ranking** — exibida em `ranking.html` quando `totalInscritos` está preenchido na prova. Fórmula: `(posição / total envios) × total inscritos`. Usuários logados podem sugerir inscritos (não verificado). Admin confirma/edita no painel admin (aba Rankings). Regras do Firestore atualizadas.
-
-#### Arquivos modificados (Prioridade 2)
-- `submit.html` — bloqueio de acesso a não-logados
-- `auth.html` — mensagem contextual + gravação de perfil no Firestore (`usuarios/{uid}`)
-- `ranking.html` — posição estimada + modal de sugestão de inscritos + box de inscritos
-- `admin.html` — aba Leads (com exportação CSV) + coluna inscritos na aba Rankings
-- `rules/firestore.rules` — coleção `usuarios` + regra para sugestão de inscritos
 
 ## Bug corrigido em 29/04/2026
 **Problema:** A lógica de identificação do usuário no `ranking.html` usava `||` entre userId e anonToken,

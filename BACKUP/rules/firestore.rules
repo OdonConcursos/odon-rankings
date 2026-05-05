@@ -83,4 +83,7 @@ service cloud.firestore {
     // que não esteja explicitamente permitido acima
     // =============================================
     match /{document=**} {
-      allo
+      allow read, write: if false;
+    }
+  }
+}
