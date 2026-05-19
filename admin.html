@@ -466,9 +466,9 @@
           <div class="meta">Enviado por: ${arq.enviadoPor} · ${arq.enviadoEm ? formatarData(arq.enviadoEm) : '—'}</div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <a href="${arq.arquivoUrl.replace('/upload/', '/upload/fl_attachment/')}" target="_blank" rel="noopener noreferrer" class="btn btn-azul btn-sm">
+          <button onclick="baixarArquivo('${arq.arquivoUrl}', '${arq.arquivoNome || 'arquivo'}')" class="btn btn-azul btn-sm">
             📥 Baixar
-          </a>
+          </button>
           <button class="btn btn-outline-pink btn-sm"
             onclick="solicitarExclusao('arquivo', '${arq.provaId}', '${arq.notaId}', '${arq.arquivoUrl}')">
             🗑️ Excluir
@@ -779,6 +779,25 @@
   document.getElementById('modal-excluir').addEventListener('click', function(e) {
     if (e.target === this) fecharModalExcluir();
   });
+
+  async function baixarArquivo(url, nome) {
+    try {
+      showToast('Iniciando download...', 'info');
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Erro ao buscar arquivo');
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = nome;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch (e) {
+      window.open(url, '_blank');
+    }
+  }
 
   async function fazerLogout() {
     if (confirm('Deseja sair?')) {
