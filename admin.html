@@ -782,4 +782,11 @@
 
   async function fazerLogout() {
     if (confirm('Deseja sair?')) {
-      await auth.sig
+      await auth.signOut();
+      window.location.href = 'index.html';
+    }
+  }
+</script>
+
+</body>
+</html>
