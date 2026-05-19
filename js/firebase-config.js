@@ -31,7 +31,7 @@ async function uploadParaCloudinary(arquivo, provaId) {
   formData.append('folder', `odon-rankings/${provaId}`);
 
   const resposta = await fetch(
-    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`,
+    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`,
     { method: 'POST', body: formData }
   );
 
@@ -130,5 +130,4 @@ function showToast(mensagem, tipo = 'success') {
   if (!toast) return;
   toast.textContent = mensagem;
   toast.className = `toast toast-${tipo} visivel`;
-  setTimeout(() => toast.classList.remove('visivel'), 3500);
-}
+  setTimeout(() => toast.classList.remove('visivel'), 3500
